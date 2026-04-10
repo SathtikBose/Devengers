@@ -1,0 +1,35 @@
+import os
+from pathlib import Path
+from dotenv import load_dotenv
+
+load_dotenv() # Loads your .env file
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-fallback-key')
+DEBUG = os.getenv('DEBUG', 'True') == 'True'
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+
+INSTALLED_APPS = [
+    'django.contrib.contenttypes',
+    'django.contrib.auth',
+    'rest_framework',
+    'rest_framework.authtoken',
+    'food_scan', # Your app
+]
+
+MIDDLEWARE = [
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+]
+
+ROOT_URLCONF = 'food_scanner_backend.urls'
+
+# Since you are using JSON storage, you can leave DATABASES empty 
+# or use the default SQLite one just to keep Django happy.
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
+}
