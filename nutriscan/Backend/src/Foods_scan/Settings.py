@@ -33,3 +33,12 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
+
+class JSONDatabase:
+    # ... existing __init__, get_all, save_all methods ...
+
+    def filter_by(self, key, value):
+        """Returns all entries where entry[key] == value"""
+        data = self.get_all()
+        return [entry for entry in data if entry.get(key) == value]
