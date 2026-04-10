@@ -42,6 +42,7 @@ app-example
 /ios
 /android
 
+# python
 __pycache__/
 *.pyc
 .env
