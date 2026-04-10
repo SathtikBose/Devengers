@@ -1,155 +1,125 @@
-import { View, Text, TouchableOpacity, TextInput } from "react-native";
+import { View, Text, TouchableOpacity, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { LinearGradient } from "expo-linear-gradient";
+import { CameraView, useCameraPermissions } from "expo-camera";
+import * as ImagePicker from "expo-image-picker";
 import { useState } from "react";
 import { useScan } from "../../src/hooks/useScan";
 
 /**
- * 📷 Scan Screen
- * - Simulates barcode scan (input for now)
- * - Calls scan API via hook
+ * 📷 REAL Scan Screen
  */
 export default function ScanScreen() {
   const router = useRouter();
-  const { scan, loading } = useScan();
+  const { scan } = useScan();
 
-  const [barcode, setBarcode] = useState("");
-  const [mode, setMode] = useState<"product" | "barcode">("product");
+  const [permission, requestPermission] = useCameraPermissions();
+  const [flash, setFlash] = useState<"off" | "on">("off");
 
   /**
-   * 🔹 Handle Scan
-   * Calls API and navigates to analysis
+   * 🔹 Handle Barcode Scan
    */
-  const handleScan = async () => {
-    if (!barcode) return alert("Enter barcode");
-
-    const res = await scan(barcode);
+  const handleScan = async ({ data }: any) => {
+    const res = await scan(data);
 
     if (res.success) {
       router.push("/(tabs)/analysis");
-    } else {
-      alert(res.message);
     }
   };
 
+  /**
+   * 🔹 Pick Image
+   */
+  const pickImage = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+    });
+
+    if (!result.canceled) {
+      Alert.alert("Image selected (mock scan)");
+      await scan("mock-barcode");
+      router.push("/(tabs)/analysis");
+    }
+  };
+
+  /**
+   * 🔹 Permission Handling
+   */
+  if (!permission) return <View />;
+
+  if (!permission.granted) {
+    return (
+      <SafeAreaView className="flex-1 items-center justify-center">
+        <Text>Camera permission required</Text>
+        <TouchableOpacity
+          onPress={requestPermission}
+          className="bg-green-600 px-4 py-2 mt-4 rounded"
+        >
+          <Text className="text-white">Allow Camera</Text>
+        </TouchableOpacity>
+      </SafeAreaView>
+    );
+  }
+
   return (
-    <SafeAreaView className="flex-1">
-      {/* 🔹 Background Gradient */}
-      <LinearGradient colors={["#1F3D2B", "#6B8F71"]} className="flex-1">
-        {/* 🔹 Header */}
-        <View className="flex-row items-center justify-between px-4 py-3">
+    <SafeAreaView className="flex-1 bg-black">
+      {/* 🔹 Camera */}
+      <CameraView
+        style={{ flex: 1 }}
+        facing="back"
+        enableTorch={flash === "on"}
+        onBarcodeScanned={handleScan}
+      />
+
+      {/* 🔹 Overlay UI */}
+      <View className="absolute top-0 left-0 right-0 bottom-0 justify-between">
+        {/* Header */}
+        <View className="flex-row justify-between px-5 py-5">
           <TouchableOpacity onPress={() => router.back()}>
-            <Ionicons name="arrow-back" size={22} color="white" />
+            <Ionicons name="arrow-back" size={24} color="white" />
           </TouchableOpacity>
 
           <Text className="text-white font-semibold text-lg">NutriScan</Text>
 
-          <View className="flex-row gap-4">
-            <Ionicons name="flash-outline" size={20} color="white" />
+          <TouchableOpacity
+            onPress={() => setFlash(flash === "on" ? "off" : "on")}
+          >
             <Ionicons
-              name="information-circle-outline"
-              size={20}
+              name={flash === "on" ? "flash" : "flash-off"}
+              size={22}
               color="white"
             />
-          </View>
+          </TouchableOpacity>
         </View>
 
-        {/* 🔹 Scanner Frame (UI Only) */}
-        <View className="flex-1 justify-center items-center">
-          {/* Top Corners */}
-          <View className="absolute top-32 left-10 w-16 h-16 border-t-4 border-l-4 border-green-400 rounded-tl-3xl" />
-          <View className="absolute top-32 right-10 w-16 h-16 border-t-4 border-r-4 border-green-400 rounded-tr-3xl" />
-
-          {/* Bottom Corners */}
-          <View className="absolute bottom-40 left-10 w-16 h-16 border-b-4 border-l-4 border-green-400 rounded-bl-3xl" />
-          <View className="absolute bottom-40 right-10 w-16 h-16 border-b-4 border-r-4 border-green-400 rounded-br-3xl" />
-
-          {/* Scan Line */}
-          <View className="w-3/4 h-[2px] bg-green-400" />
-        </View>
-
-        {/* 🔹 Mode Toggle */}
-        <View className="items-center">
-          <View className="flex-row bg-black/40 rounded-full p-1">
-            <TouchableOpacity
-              onPress={() => setMode("product")}
-              className={`px-5 py-2 rounded-full ${
-                mode === "product" ? "bg-white" : ""
-              }`}
-            >
-              <Text
-                className={`${mode === "product" ? "text-black" : "text-white"}`}
-              >
-                Product
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              onPress={() => setMode("barcode")}
-              className={`px-5 py-2 rounded-full ${
-                mode === "barcode" ? "bg-white" : ""
-              }`}
-            >
-              <Text
-                className={`${mode === "barcode" ? "text-black" : "text-white"}`}
-              >
-                Barcode
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        {/* 🔹 Input (Temporary Scanner Simulation) */}
-        <View className="px-6 mt-4">
-          <TextInput
-            placeholder="Enter barcode..."
-            placeholderTextColor="#ccc"
-            value={barcode}
-            onChangeText={setBarcode}
-            className="bg-white/20 text-white px-4 py-3 rounded-xl"
-          />
-        </View>
-
-        {/* 🔹 Controls */}
-        <View className="flex-row justify-between items-center px-10 mt-6">
-          {/* Upload */}
-          <TouchableOpacity className="items-center">
-            <View className="bg-black/40 p-4 rounded-full">
+        {/* Bottom Controls */}
+        <View className="flex-row justify-between items-center px-10 mb-10">
+          {/* Gallery */}
+          <TouchableOpacity onPress={pickImage} className="items-center">
+            <View className="bg-black/50 p-4 rounded-full">
               <Ionicons name="image-outline" size={20} color="white" />
             </View>
             <Text className="text-white text-xs mt-2">UPLOAD</Text>
           </TouchableOpacity>
 
           {/* Scan Button */}
-          <TouchableOpacity
-            onPress={handleScan}
-            disabled={loading}
-            className="bg-white p-6 rounded-full"
-          >
+          <TouchableOpacity className="bg-white p-6 rounded-full">
             <MaterialIcons name="qr-code-scanner" size={28} color="#166534" />
           </TouchableOpacity>
 
           {/* Recent */}
-          <TouchableOpacity className="items-center">
-            <View className="bg-black/40 p-4 rounded-full">
+          <TouchableOpacity
+            onPress={() => router.push("/(tabs)/history")}
+            className="items-center"
+          >
+            <View className="bg-black/50 p-4 rounded-full">
               <Ionicons name="time-outline" size={20} color="white" />
             </View>
             <Text className="text-white text-xs mt-2">RECENT</Text>
           </TouchableOpacity>
         </View>
-
-        {/* 🔹 Hint */}
-        <View className="items-center mt-6">
-          <Text className="text-white/80 text-sm bg-black/30 px-4 py-2 rounded-full">
-            Center the nutritional facts in the frame
-          </Text>
-        </View>
-
-        {/* Bottom spacing */}
-        <View className="h-10" />
-      </LinearGradient>
+      </View>
     </SafeAreaView>
   );
 }
