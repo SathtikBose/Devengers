@@ -1,10 +1,13 @@
 import { useState } from "react";
 import { loginApi, signupApi } from "../api/auth.api";
 import { useAuthStore } from "../store/useAuthStore";
+import { ENV } from "../config/env";
+import { apiClient } from "../api/client";
 
 /**
  * 🔐 Auth Hook
- * Handles authentication logic (UI should NOT call API directly)
+ * Handles all authentication-related logic
+ * Keeps UI clean (no direct API calls in screens)
  */
 export const useAuth = () => {
   const [loading, setLoading] = useState(false);
@@ -13,7 +16,8 @@ export const useAuth = () => {
 
   /**
    * 🔹 Handle Login
-   * Calls API → stores user + token
+   * - Calls API (mock or real)
+   * - Stores user + token in Zustand
    */
   const handleLogin = async (email: string, password: string) => {
     try {
@@ -21,14 +25,14 @@ export const useAuth = () => {
 
       const data = await loginApi({ email, password });
 
-      // Expected response: { user, token }
+      // Expected: { user, token }
       login(data.user, data.token);
 
       return { success: true };
     } catch (error: any) {
       return {
         success: false,
-        message: error.response?.data?.message || "Login failed",
+        message: error?.response?.data?.message || "Login failed",
       };
     } finally {
       setLoading(false);
@@ -37,6 +41,8 @@ export const useAuth = () => {
 
   /**
    * 🔹 Handle Signup
+   * - Creates user
+   * - Auto-login after success
    */
   const handleSignup = async (
     name: string,
@@ -48,14 +54,58 @@ export const useAuth = () => {
 
       const data = await signupApi({ name, email, password });
 
-      // Auto login after signup (optional but standard UX)
+      // Auto-login
       login(data.user, data.token);
 
       return { success: true };
     } catch (error: any) {
       return {
         success: false,
-        message: error.response?.data?.message || "Signup failed",
+        message: error?.response?.data?.message || "Signup failed",
+      };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /**
+   * 🔹 Change Password
+   * - Uses mock in development
+   * - Uses API in production
+   */
+  const changePassword = async (
+    currentPassword: string,
+    newPassword: string,
+  ) => {
+    try {
+      setLoading(true);
+
+      // 🔸 MOCK MODE
+      if (ENV.USE_MOCK) {
+        await new Promise((res) => setTimeout(res, 800));
+
+        // Optional: simulate failure
+        if (currentPassword !== "123456") {
+          return {
+            success: false,
+            message: "Current password is incorrect",
+          };
+        }
+
+        return { success: true };
+      }
+
+      // 🔸 REAL API
+      await apiClient.post("/auth/change-password", {
+        currentPassword,
+        newPassword,
+      });
+
+      return { success: true };
+    } catch (error: any) {
+      return {
+        success: false,
+        message: error?.response?.data?.message || "Failed to update password",
       };
     } finally {
       setLoading(false);
@@ -65,6 +115,7 @@ export const useAuth = () => {
   return {
     handleLogin,
     handleSignup,
+    changePassword,
     loading,
   };
 };

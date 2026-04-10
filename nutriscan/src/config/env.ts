@@ -1,8 +1,10 @@
 /**
  * 🌐 Environment Config
- * Central place for API base URL
- * Replace with your backend URL
+ * Controls API vs Mock behavior
  */
 export const ENV = {
-  BASE_URL: "http://localhost:5000/api", // ⚠️ change for real device (use IP)
+  BASE_URL: "http://localhost:5000/api",
+
+  // 🔹 Toggle data source
+  USE_MOCK: true, // 👉 set false in production
 };
