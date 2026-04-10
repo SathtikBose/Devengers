@@ -134,3 +134,44 @@ class LoginView(APIView):
             }, status=200)
 
         return Response({"error": "Invalid credentials"}, status=401)
+    # food_scan/views.py
+    
+import base64
+from .cloudinary_service import upload_food_image
+from .ai_service import analyze_food_image
+from .json_db import JSONDatabase
+
+scan_db = JSONDatabase('scans')
+
+class ScanRequestView(APIView):
+    def post(self, request):
+        scan_data = request.data.get('scan_data') # Base64 string
+        
+        try:
+            # 1. Decode to bytes
+            img_bytes = base64.b64decode(scan_data)
+
+            # 2. Upload to Cloudinary for permanent storage
+            image_url = upload_food_image(img_bytes)
+
+            # 3. Perform AI Analysis (using the bytes)
+            user_allergies = getattr(request.user, 'profile', "None")
+            ai_result = analyze_food_image(img_bytes, user_allergies)
+
+            # 4. Save the Cloudinary URL in your JSON history
+            scan_entry = {
+                "user_id": request.user.id,
+                "image_url": image_url, # Now you have a cloud link!
+                "product_name": ai_result['product_name'],
+                "health_score": ai_result['health_score'],
+            }
+            scan_db.add(scan_entry)
+
+            return Response({
+                "status": "success",
+                "image_url": image_url,
+                "data": ai_result
+            }, status=200)
+
+        except Exception as e:
+            return Response({"error": str(e)}, status=500)
