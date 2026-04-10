@@ -31,3 +31,8 @@ class JSONDatabase:
         data = self.get_all()
         data.append(entry)
         self.save_all(data)
+
+    def filter_by(self, key, value):
+        """Returns all entries where entry[key] == value"""
+        data = self.get_all()
+        return [entry for entry in data if entry.get(key) == value]

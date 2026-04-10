@@ -1,72 +1,19 @@
 import base64
+import uuid
+import secrets
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .ai_service import analyze_food_image
-
-class ScanRequestView(APIView):
-    """
-    Endpoint that receives images or barcodes and returns AI insights.
-    """
-    def post(self, request, *args, **kwargs):
-        scan_type = request.data.get('scan_type')
-        scan_data = request.data.get('scan_data') # Base64 encoded string
-
-        if not scan_data:
-            return Response({"error": "No data provided"}, status=status.HTTP_400_BAD_REQUEST)
-
-        response_payload = {
-            "status": "processing",
-            "scan_type": scan_type
-        }
-
-        try:
-            if scan_type == 'image':
-                # 1. Decode base64 to bytes
-                img_bytes = base64.b64decode(scan_data)
-                
-                # 2. Extract user context (allergies) from profile if it exists
-                # This makes the "SAFE" or "LIMIT" labels personalized
-                user_allergies = getattr(request.user, 'profile', "None")
-                
-                # 3. Call our AI Service
-                ai_result = analyze_food_image(img_bytes, user_allergies)
-                
-                # 4. Success Response
-                response_payload.update({
-                    "status": "success",
-                    "result_summary": "NutriAI Analysis Complete",
-                    "data": ai_result
-                })
-                
-            elif scan_type == 'barcode':
-                # Future logic: Query a barcode DB or pass the ID to AI to lookup
-                response_payload.update({
-                    "status": "success",
-                    "result_summary": f"Barcode {scan_data} received",
-                    "data": {"barcode": scan_data}
-                })
-
-            return Response(response_payload, status=status.HTTP_200_OK)
-
-        except Exception as e:
-            return Response({
-                "status": "error",
-                "message": f"AI Processing Failed: {str(e)}"
-            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        
-
-        # food_scan/views.py
-
-# food_scan/views.py
-import uuid
-import secrets
 from rest_framework.permissions import AllowAny
 from django.contrib.auth.hashers import make_password, check_password
-from .json_db import JSONDatabase
+
+from .ai_service import analyze_food_image
+from .Claudenary_service import upload_food_image
+from .Json_db import JSONDatabase
 
 # Initialize our JSON "Tables"
 user_db = JSONDatabase('users')
+scan_db = JSONDatabase('scans')
 
 class RegisterView(APIView):
     permission_classes = [AllowAny]
@@ -108,7 +55,6 @@ class RegisterView(APIView):
             "message": "User registered successfully (JSON Storage)"
         }, status=status.HTTP_201_CREATED)
 
-
 class LoginView(APIView):
     permission_classes = [AllowAny]
 
@@ -134,14 +80,6 @@ class LoginView(APIView):
             }, status=200)
 
         return Response({"error": "Invalid credentials"}, status=401)
-    # food_scan/views.py
-    
-import base64
-from .cloudinary_service import upload_food_image
-from .ai_service import analyze_food_image
-from .json_db import JSONDatabase
-
-scan_db = JSONDatabase('scans')
 
 class ScanRequestView(APIView):
     def post(self, request):
@@ -175,20 +113,10 @@ class ScanRequestView(APIView):
 
         except Exception as e:
             return Response({"error": str(e)}, status=500)
-        
-        # food_scan/views.py
-from .json_db import JSONDatabase
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.authentication import TokenAuthentication
-
 
 class ScanHistoryView(APIView):
-    # Only authenticated users can see their own history
-    # (The token passed from the mobile app identifies the user)
     def get(self, request):
         # 1. Identify the user from the token
-        # In your JSON-based auth, we find the user by their saved token
         token = request.headers.get('Authorization').split(' ')[1]
         users = user_db.get_all()
         current_user = next((u for u in users if u['token'] == token), None)
