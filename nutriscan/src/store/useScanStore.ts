@@ -35,6 +35,12 @@ export const useScanStore = create<ScanState>()(
        * 🔹 Save scan result + auto add to history
        */
       setScanResult: (data) => {
+        console.log("💾 Setting scan result in store:", {
+          productName: data.product?.name,
+          analysisGrade: data.analysis?.grade,
+          hasNutrition: !!data.analysis?.nutrition,
+        });
+
         const newItem: ScanItem = {
           id: Date.now().toString(),
           name: data.product.name,
@@ -49,6 +55,8 @@ export const useScanStore = create<ScanState>()(
           analysis: data.analysis,
           history: [newItem, ...get().history],
         });
+
+        console.log("✅ Scan stored successfully");
       },
 
       /**

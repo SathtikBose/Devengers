@@ -18,9 +18,22 @@ export const scanProductApi = async (barcode: string) => {
  * 📷 Send Image (Base64) to Backend
  */
 export const scanImageApi = async (base64: string) => {
-  const response = await apiClient.post("/scan/image", {
-    image: base64,
-  });
+  console.log("📷 Scan Image API called - Mock mode:", ENV.USE_MOCK);
 
-  return response.data;
+  try {
+    if (ENV.USE_MOCK) {
+      console.log("✅ Using mock scan data");
+      return await mockScan("image-scan");
+    }
+
+    const response = await apiClient.post("/scan/image", {
+      image: base64,
+    });
+
+    console.log("✅ Real API scan response:", response.data);
+    return response.data;
+  } catch (error: any) {
+    console.error("❌ Scan API error:", error);
+    throw error;
+  }
 };
