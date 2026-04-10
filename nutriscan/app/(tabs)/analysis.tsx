@@ -4,15 +4,18 @@ import { useScanStore } from "../../src/store/useScanStore";
 import { demoAnalysis } from "../../src/data/demoAnalysis";
 
 /**
- * 📊 Analysis Screen
- * - Displays scanned product result
- * - Reads data from Zustand store
+ * 📊 Analysis Screen (FINAL FIXED)
+ * - Always shows data (demo fallback)
+ * - No null crashes
  */
 export default function AnalysisScreen() {
   const { product, analysis } = useScanStore();
 
-  const displayProduct = product || demoAnalysis.product;
-  const displayAnalysis = analysis || demoAnalysis.analysis;
+  /**
+   * 🔹 Safe fallback (CRITICAL FIX)
+   */
+  const displayProduct = product ?? demoAnalysis.product;
+  const displayAnalysis = analysis ?? demoAnalysis.analysis;
 
   return (
     <SafeAreaView className="flex-1 bg-[#EEF3EC]">
@@ -32,13 +35,13 @@ export default function AnalysisScreen() {
             {displayProduct.name}
           </Text>
 
-          <Text className="text-gray-500 mt-1">{product.subtitle}</Text>
+          <Text className="text-gray-500 mt-1">{displayProduct.subtitle}</Text>
 
           {/* Grade */}
           <View className="flex-row items-center mt-3 gap-2">
             <View className="bg-green-500 px-3 py-1 rounded-full">
               <Text className="text-white text-xs font-semibold">
-                {analysis.grade}
+                {displayAnalysis.grade}
               </Text>
             </View>
 
@@ -48,7 +51,7 @@ export default function AnalysisScreen() {
 
         {/* 🔹 Product Image */}
         <Image
-          source={{ uri: product.image }}
+          source={{ uri: displayProduct.image }}
           className="mx-5 mt-4 h-60 rounded-3xl"
           resizeMode="cover"
         />
@@ -56,10 +59,12 @@ export default function AnalysisScreen() {
         {/* 🔹 Recommendation */}
         <View className="mx-5 mt-4 bg-green-100 rounded-2xl p-4 border-l-4 border-green-600">
           <Text className="text-green-800 font-semibold">
-            NutriScan Recommendation: {analysis.recommendation}
+            NutriScan Recommendation: {displayAnalysis.recommendation}
           </Text>
 
-          <Text className="text-gray-600 mt-2">{analysis.description}</Text>
+          <Text className="text-gray-600 mt-2">
+            {displayAnalysis.description}
+          </Text>
         </View>
 
         {/* 🔹 Score */}
@@ -70,7 +75,7 @@ export default function AnalysisScreen() {
             {displayAnalysis.score}
           </Text>
 
-          <Text className="text-gray-500 mt-2">{analysis.rating}</Text>
+          <Text className="text-gray-500 mt-2">{displayAnalysis.rating}</Text>
         </View>
 
         {/* 🔹 Nutrition */}
@@ -85,7 +90,7 @@ export default function AnalysisScreen() {
           <Text className="text-lg font-semibold">Ingredients List</Text>
 
           <View className="flex-row flex-wrap gap-2 mt-3">
-            {analysis.ingredients?.map((item: string, i: number) => (
+            {displayAnalysis.ingredients?.map((item: string, i: number) => (
               <View key={i} className="bg-green-100 px-3 py-1 rounded-full">
                 <Text className="text-green-700 text-xs">{item}</Text>
               </View>
@@ -97,7 +102,7 @@ export default function AnalysisScreen() {
         <View className="mx-5 mt-6">
           <Text className="text-lg font-semibold">Healthier Alternatives</Text>
 
-          {analysis.alternatives?.map((alt: any, i: number) => (
+          {displayAnalysis.alternatives?.map((alt: any, i: number) => (
             <View
               key={i}
               className="bg-white p-4 rounded-2xl mt-3 flex-row justify-between items-center"
@@ -121,7 +126,7 @@ export default function AnalysisScreen() {
 }
 
 /**
- * 🔹 Nutrition Row Component
+ * 🔹 Nutrition Item
  */
 function NutritionItem({ label, value }: { label: string; value: string }) {
   return (
