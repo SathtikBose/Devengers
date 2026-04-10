@@ -42,3 +42,16 @@ export const signupApi = async (data: {
   const response = await apiClient.post("/auth/signup", data);
   return response.data;
 };
+
+/**
+ * 📸 Upload Profile Image
+ */
+export const updateProfileApi = async (formData: FormData) => {
+  const response = await apiClient.put("/user/update-profile", formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+
+  return response.data;
+};
