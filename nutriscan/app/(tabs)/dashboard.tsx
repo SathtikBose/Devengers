@@ -2,9 +2,15 @@ import { View, Text, ScrollView, TouchableOpacity, Image } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { useAuthStore } from "../../src/store/useAuthStore";
 
 export default function DashboardScreen() {
   const router = useRouter();
+  const { user } = useAuthStore();
+
+  // 🔹 Default health score (can be enhanced with user health data from API)
+  const healthScore = 88;
+  const userName = user?.name || "User";
 
   return (
     <SafeAreaView className="flex-1 bg-[#EEF3EC]">
@@ -25,9 +31,9 @@ export default function DashboardScreen() {
             DAILY BRIEFING
           </Text>
 
-          {/* Dynamic username will come later from store */}
+          {/* Dynamic username from auth store */}
           <Text className="text-3xl font-bold mt-2 text-gray-800">
-            Hello, User
+            Hello, {userName}
           </Text>
         </View>
 
@@ -71,12 +77,17 @@ export default function DashboardScreen() {
           <View className="mt-4">
             <View className="flex-row justify-between">
               <Text className="text-gray-500 text-sm">Purity Score</Text>
-              <Text className="text-gray-800 font-semibold">88%</Text>
+              <Text className="text-gray-800 font-semibold">
+                {healthScore}%
+              </Text>
             </View>
 
             {/* Progress Bar */}
             <View className="h-2 bg-gray-200 rounded-full mt-2 overflow-hidden">
-              <View className="h-2 bg-green-600 w-[88%]" />
+              <View
+                className="h-2 bg-green-600"
+                style={{ width: `${healthScore}%` }}
+              />
             </View>
           </View>
 

@@ -11,12 +11,22 @@ import { mockLogin } from "./mock";
  * 🔹 Login API
  */
 export const loginApi = async (data: { email: string; password: string }) => {
-  if (ENV.USE_MOCK) {
-    return await mockLogin();
-  }
+  console.log("📝 Login attempt:", { email: data.email, mock: ENV.USE_MOCK });
 
-  const response = await apiClient.post("/auth/login", data);
-  return response.data;
+  try {
+    if (ENV.USE_MOCK) {
+      const mockData = await mockLogin();
+      console.log("✅ Mock login successful:", mockData);
+      return mockData;
+    }
+
+    const response = await apiClient.post("/auth/login", data);
+    console.log("✅ Real API login successful:", response.data);
+    return response.data;
+  } catch (error: any) {
+    console.error("❌ Login API error:", error);
+    throw error;
+  }
 };
 
 /**
@@ -53,5 +63,24 @@ export const updateProfileApi = async (formData: FormData) => {
     },
   });
 
+  return response.data;
+};
+
+/**
+ * 🔑 Password Reset (Send Link)
+ */
+export const requestPasswordResetApi = async (email: string) => {
+  const response = await apiClient.post("/auth/forgot-password", { email });
+  return response.data;
+};
+
+/**
+ * 🔑 Change Password
+ */
+export const changePasswordApi = async (data: {
+  currentPassword: string;
+  newPassword: string;
+}) => {
+  const response = await apiClient.post("/auth/change-password", data);
   return response.data;
 };

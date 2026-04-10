@@ -14,27 +14,14 @@ import { useScanStore } from "../../src/store/useScanStore";
 
 /**
  * 📜 History Screen
- * - Uses mock API (or real later)
- * - Includes search + filters
+ * - Shows scanned products from persistent storage
+ * - Includes search + real-time filtering
  */
 export default function HistoryScreen() {
-  const [activeFilter, setActiveFilter] = useState("Today");
-  const [scans, setScans] = useState<any[]>([]);
+  const [activeFilter, setActiveFilter] = useState("All");
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const history = useScanStore((state) => state.history);
-
-  /**
-   * 🔹 Fetch history (mock or API)
-   */
-  useEffect(() => {
-    const fetchData = async () => {
-      const data = await mockHistory();
-      setScans(data);
-    };
-
-    fetchData();
-  }, []);
 
   /**
    * 🔹 Filtered Data

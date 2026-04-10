@@ -1,5 +1,11 @@
 import { useState } from "react";
-import { loginApi, signupApi, updateProfileApi } from "../api/auth.api";
+import {
+  loginApi,
+  signupApi,
+  updateProfileApi,
+  changePasswordApi,
+  requestPasswordResetApi,
+} from "../api/auth.api";
 import { useAuthStore } from "../store/useAuthStore";
 import { ENV } from "../config/env";
 
@@ -20,13 +26,23 @@ export const useAuth = () => {
 
       const data = await loginApi({ email, password });
 
+      if (!data || !data.user || !data.token) {
+        console.error("❌ Login API returned invalid data:", data);
+        return {
+          success: false,
+          message: "Invalid login response from server",
+        };
+      }
+
       login(data.user, data.token);
 
       return { success: true };
     } catch (error: any) {
+      console.error("❌ Login error:", error);
       return {
         success: false,
-        message: error?.response?.data?.message || "Login failed",
+        message:
+          error?.response?.data?.message || error?.message || "Login failed",
       };
     } finally {
       setLoading(false);
@@ -46,13 +62,23 @@ export const useAuth = () => {
 
       const data = await signupApi({ name, email, password });
 
+      if (!data || !data.user || !data.token) {
+        console.error("❌ Signup API returned invalid data:", data);
+        return {
+          success: false,
+          message: "Invalid signup response from server",
+        };
+      }
+
       login(data.user, data.token);
 
       return { success: true };
     } catch (error: any) {
+      console.error("❌ Signup error:", error);
       return {
         success: false,
-        message: error?.response?.data?.message || "Signup failed",
+        message:
+          error?.response?.data?.message || error?.message || "Signup failed",
       };
     } finally {
       setLoading(false);
@@ -111,24 +137,33 @@ export const useAuth = () => {
     try {
       setLoading(true);
 
-      if (ENV.USE_MOCK) {
-        await new Promise((res) => setTimeout(res, 800));
-
-        if (currentPassword !== "123456") {
-          return {
-            success: false,
-            message: "Incorrect current password",
-          };
-        }
-
-        return { success: true };
-      }
+      await changePasswordApi({ currentPassword, newPassword });
 
       return { success: true };
     } catch (error: any) {
       return {
         success: false,
-        message: "Failed to update password",
+        message: error?.response?.data?.message || "Failed to update password",
+      };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /**
+   * 🔹 Request Password Reset
+   */
+  const requestPasswordReset = async (email: string) => {
+    try {
+      setLoading(true);
+
+      await requestPasswordResetApi(email);
+
+      return { success: true };
+    } catch (error: any) {
+      return {
+        success: false,
+        message: error?.response?.data?.message || "Failed to send reset link",
       };
     } finally {
       setLoading(false);
@@ -140,6 +175,7 @@ export const useAuth = () => {
     handleSignup,
     uploadAvatar,
     changePassword,
+    requestPasswordReset,
     loading,
   };
 };

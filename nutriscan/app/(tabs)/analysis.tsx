@@ -80,9 +80,24 @@ export default function AnalysisScreen() {
 
         {/* 🔹 Nutrition */}
         <View className="mx-5 mt-4 gap-3">
-          <NutritionItem label="Calories" value="150 kcal" />
-          <NutritionItem label="Protein" value="12 g" />
-          <NutritionItem label="Sugar" value="8 g" />
+          {displayAnalysis.nutrition?.calories && (
+            <NutritionItem
+              label="Calories"
+              value={displayAnalysis.nutrition.calories}
+            />
+          )}
+          {displayAnalysis.nutrition?.protein && (
+            <NutritionItem
+              label="Protein"
+              value={displayAnalysis.nutrition.protein}
+            />
+          )}
+          {displayAnalysis.nutrition?.sugar && (
+            <NutritionItem
+              label="Sugar"
+              value={displayAnalysis.nutrition.sugar}
+            />
+          )}
         </View>
 
         {/* 🔹 Ingredients */}

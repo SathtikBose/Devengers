@@ -5,45 +5,45 @@ import {
   TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
+  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons, Feather } from "@expo/vector-icons";
 import { useState } from "react";
 import { useRouter } from "expo-router";
+import { useAuth } from "../../src/hooks/useAuth";
 
 /**
  * 🔑 Forgot Password Screen
  * - Collects email
- * - Sends reset request (API can be added later)
+ * - Sends reset request to backend
  */
 export default function ForgotPasswordScreen() {
   const router = useRouter();
+  const { requestPasswordReset, loading } = useAuth();
 
   const [email, setEmail] = useState("");
-  const [loading, setLoading] = useState(false);
 
   /**
    * 🔹 Handle Reset
-   * Currently UI-only (API can be integrated later)
+   * Calls backend API to send password reset link
    */
   const handleReset = async () => {
-    if (!email) {
-      return alert("Please enter your email");
+    if (!email.trim()) {
+      return Alert.alert("Error", "Please enter your email");
     }
 
-    try {
-      setLoading(true);
+    const res = await requestPasswordReset(email);
 
-      // 🔸 TODO: connect to backend API
-      await new Promise((res) => setTimeout(res, 1000));
-
-      alert("Reset link sent to your email");
-
-      router.push("/(auth)/login");
-    } catch (error) {
-      alert("Something went wrong");
-    } finally {
-      setLoading(false);
+    if (res.success) {
+      Alert.alert("Success", "Password reset link sent to your email", [
+        {
+          text: "OK",
+          onPress: () => router.push("/(auth)/login"),
+        },
+      ]);
+    } else {
+      Alert.alert("Error", res.message || "Failed to send reset link");
     }
   };
 
