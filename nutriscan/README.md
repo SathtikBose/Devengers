@@ -55,11 +55,12 @@ Expo Go app installed on a mobile device or an Android/iOS emulator
 Installation
 Install dependencies:
 
-Bash
 npm install
+
 Start the development server:
 
-Bash
 npx expo start
+
 Switch to Mock Data (Optional):
+
 Set USE_MOCK=true in your .env configuration to test the UI with pre-defined analysis data without needing a live backend.
