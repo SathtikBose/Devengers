@@ -175,3 +175,35 @@ class ScanRequestView(APIView):
 
         except Exception as e:
             return Response({"error": str(e)}, status=500)
+        
+        # food_scan/views.py
+from .json_db import JSONDatabase
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.authentication import TokenAuthentication
+
+
+class ScanHistoryView(APIView):
+    # Only authenticated users can see their own history
+    # (The token passed from the mobile app identifies the user)
+    def get(self, request):
+        # 1. Identify the user from the token
+        # In your JSON-based auth, we find the user by their saved token
+        token = request.headers.get('Authorization').split(' ')[1]
+        users = user_db.get_all()
+        current_user = next((u for u in users if u['token'] == token), None)
+
+        if not current_user:
+            return Response({"error": "Unauthorized"}, status=401)
+
+        # 2. Retrieve all scans for this specific user ID
+        user_scans = scan_db.filter_by('user_id', current_user['id'])
+
+        # 3. Sort scans by timestamp (most recent first)
+        user_scans.sort(key=lambda x: x.get('timestamp', ''), reverse=True)
+
+        return Response({
+            "status": "success",
+            "count": len(user_scans),
+            "history": user_scans
+        }, status=200)
