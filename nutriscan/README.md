@@ -1,50 +1,65 @@
-# Welcome to your Expo app 👋
+Project Overview
+NutriScan is a mobile application developed for the modern consumer who wants to make informed dietary choices without deciphering complex scientific labels. By combining mobile imaging technology with backend nutritional analysis, the app provides an instant health "grade" for food products, identifies beneficial or harmful ingredients, and suggests healthier alternatives.
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Key Features
+📸 Multi-Modal Scanning Interface
+The application offers three intuitive ways to analyze products:
 
-## Get started
+Live Camera Capture: Directly photograph ingredient labels for instant analysis using Base64-encoded image processing.
 
-1. Install dependencies
+Gallery Upload: Select existing photos from the device's library to run historical scans.
 
-   ```bash
-   npm install
-   ```
+Manual Barcode Entry: A dedicated input field for barcode numbers to fetch product data directly from the API.
 
-2. Start the app
+📊 Comprehensive Health Analysis
+Upon scanning, users receive a detailed breakdown of their food item:
 
-   ```bash
-   npx expo start
-   ```
+Dynamic Health Score: A visual 0–100 score that changes color (green, amber, or red) based on the product's overall health impact.
 
-In the output, you'll find options to open the app in a
+Nutritional Grade: An easy-to-understand letter grade (e.g., A, B, C) for quick decision-making.
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+Visual Nutrient Tracking: Real-time progress bars for calories, protein, and sugar content.
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+🥗 Ingredient Insights & Alternatives
+Categorized Ingredients: The app intelligently splits labels into "Safe & Beneficial" and "Avoid / Limit" categories, providing specific reasons for why certain ingredients should be avoided.
 
-## Get a fresh project
+Healthy Swaps: If a product is flagged as unhealthy, the system suggests verified "Healthier Alternatives" with a one-tap swap action.
 
-When you're ready, run:
+Technical Architecture
+Tech Stack
+Framework: Expo (v54) and React Native (v0.81.5) for cross-platform performance.
 
-```bash
-npm run reset-project
-```
+Navigation: Expo Router (v6.0.23) utilizing file-based routing for a seamless user experience.
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+State Management: Zustand (v5.0.12) for efficient, global management of scan results and product data.
 
-## Learn more
+UI/Styling: NativeWind (v4.2.3) (Tailwind CSS for React Native) ensuring a modern, responsive design.
 
-To learn more about developing your project with Expo, look at the following resources:
+API Management: Axios-based client with a built-in mock mode toggle in the environment configuration for development and testing.
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+Core Workflow
+Ingestion: The useScan hook manages the logic for image capture and gallery picking.
 
-## Join the community
+Processing: Images are converted to Base64 and transmitted via scanImageApi to the backend.
 
-Join our community of developers creating universal apps.
+Storage: The resulting analysis is stored in the useScanStore, which triggers an automatic navigation to the Analysis screen.
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+Presentation: The AnalysisScreen renders the data using robust fallbacks to ensure the UI remains functional even with incomplete datasets.
+
+Getting Started
+Prerequisites
+Node.js and npm
+
+Expo Go app installed on a mobile device or an Android/iOS emulator
+
+Installation
+Install dependencies:
+
+Bash
+npm install
+Start the development server:
+
+Bash
+npx expo start
+Switch to Mock Data (Optional):
+Set USE_MOCK=true in your .env configuration to test the UI with pre-defined analysis data without needing a live backend.
