@@ -8,55 +8,44 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { mockHistory } from "../../src/api/mock";
 
 /**
  * 📜 History Screen
- * - Displays previous scans
- * - Includes filters + search
+ * - Uses mock API (or real later)
+ * - Includes search + filters
  */
 export default function HistoryScreen() {
   const [activeFilter, setActiveFilter] = useState("Today");
+  const [scans, setScans] = useState<any[]>([]);
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
 
-  // 🔹 Mock Data (replace with API later)
-  const scans = [
-    {
-      id: 1,
-      name: "Organic Greek Yogurt",
-      brand: "Nature's Best Dairy",
-      status: "SAFE",
-      note: "",
-      time: "2h ago",
-      image: "https://cdn-icons-png.flaticon.com/512/3075/3075977.png",
-    },
-    {
-      id: 2,
-      name: "Whole Grain O's",
-      brand: "Morning Crunch Co.",
-      status: "MODERATE",
-      note: "High Sugar",
-      time: "5h ago",
-      image: "https://cdn-icons-png.flaticon.com/512/1046/1046784.png",
-    },
-    {
-      id: 3,
-      name: "Hyper-Focus Energy",
-      brand: "Volt Beverages",
-      status: "AVOID",
-      note: "Artificial Dye",
-      time: "Yesterday",
-      image: "https://cdn-icons-png.flaticon.com/512/2965/2965567.png",
-    },
-    {
-      id: 4,
-      name: "Unsweetened Almond",
-      brand: "Pure Plant Co.",
-      status: "SAFE",
-      note: "",
-      time: "Yesterday",
-      image: "https://cdn-icons-png.flaticon.com/512/1046/1046750.png",
-    },
-  ];
+  /**
+   * 🔹 Fetch history (mock or API)
+   */
+  useEffect(() => {
+    const fetchData = async () => {
+      const data = await mockHistory();
+      setScans(data);
+    };
+
+    fetchData();
+  }, []);
+
+  /**
+   * 🔹 Filtered Data
+   */
+  const filteredScans = scans.filter((item) => {
+    const matchesSearch = item.name
+      .toLowerCase()
+      .includes(search.toLowerCase());
+
+    const matchesStatus = statusFilter ? item.status === statusFilter : true;
+
+    return matchesSearch && matchesStatus;
+  });
 
   return (
     <SafeAreaView className="flex-1 bg-[#EEF3EC]">
@@ -75,11 +64,13 @@ export default function HistoryScreen() {
           <Ionicons name="search-outline" size={18} color="#6B7280" />
           <TextInput
             placeholder="Search your scans..."
+            value={search}
+            onChangeText={setSearch}
             className="ml-3 flex-1"
           />
         </View>
 
-        {/* 🔹 Time Filters */}
+        {/* 🔹 Time Filters (UI only for now) */}
         <View className="flex-row gap-3 px-5 mt-4">
           {["Today", "This Week", "All"].map((item) => (
             <TouchableOpacity
@@ -102,9 +93,30 @@ export default function HistoryScreen() {
 
         {/* 🔹 Status Filters */}
         <View className="flex-row gap-3 px-5 mt-4">
-          <StatusChip label="SAFE" color="green" />
-          <StatusChip label="MODERATE" color="yellow" />
-          <StatusChip label="AVOID" color="red" />
+          <StatusChip
+            label="SAFE"
+            color="green"
+            active={statusFilter === "SAFE"}
+            onPress={() =>
+              setStatusFilter(statusFilter === "SAFE" ? "" : "SAFE")
+            }
+          />
+          <StatusChip
+            label="MODERATE"
+            color="yellow"
+            active={statusFilter === "MODERATE"}
+            onPress={() =>
+              setStatusFilter(statusFilter === "MODERATE" ? "" : "MODERATE")
+            }
+          />
+          <StatusChip
+            label="AVOID"
+            color="red"
+            active={statusFilter === "AVOID"}
+            onPress={() =>
+              setStatusFilter(statusFilter === "AVOID" ? "" : "AVOID")
+            }
+          />
         </View>
 
         {/* 🔹 Section Title */}
@@ -114,9 +126,15 @@ export default function HistoryScreen() {
 
         {/* 🔹 List */}
         <View className="px-5 mt-3 gap-4">
-          {scans.map((item) => (
+          {filteredScans.map((item) => (
             <ScanCard key={item.id} item={item} />
           ))}
+
+          {filteredScans.length === 0 && (
+            <Text className="text-center text-gray-400 mt-6">
+              No results found
+            </Text>
+          )}
         </View>
 
         <View className="h-24" />
@@ -126,38 +144,42 @@ export default function HistoryScreen() {
 }
 
 /**
- * 🔹 Status Chip Component
+ * 🔹 Status Chip
  */
-function StatusChip({
-  label,
-  color,
-}: {
-  label: string;
-  color: "green" | "yellow" | "red";
-}) {
+function StatusChip({ label, color, active, onPress }: any) {
   const bg =
     color === "green"
-      ? "bg-green-100"
+      ? active
+        ? "bg-green-600"
+        : "bg-green-100"
       : color === "yellow"
-        ? "bg-yellow-100"
-        : "bg-red-100";
+        ? active
+          ? "bg-yellow-500"
+          : "bg-yellow-100"
+        : active
+          ? "bg-red-600"
+          : "bg-red-100";
 
-  const text =
-    color === "green"
+  const text = active
+    ? "text-white"
+    : color === "green"
       ? "text-green-700"
       : color === "yellow"
         ? "text-yellow-700"
         : "text-red-700";
 
   return (
-    <View className={`px-4 py-2 rounded-full ${bg}`}>
+    <TouchableOpacity
+      onPress={onPress}
+      className={`px-4 py-2 rounded-full ${bg}`}
+    >
       <Text className={`text-xs font-semibold ${text}`}>{label}</Text>
-    </View>
+    </TouchableOpacity>
   );
 }
 
 /**
- * 🔹 Scan Card Component
+ * 🔹 Scan Card
  */
 function ScanCard({ item }: any) {
   const getStatusStyle = () => {
