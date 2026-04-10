@@ -1,6 +1,7 @@
 import { View, Text, ScrollView, Image, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useScanStore } from "../../src/store/useScanStore";
+import { demoAnalysis } from "../../src/data/demoAnalysis";
 
 /**
  * 📊 Analysis Screen
@@ -10,14 +11,8 @@ import { useScanStore } from "../../src/store/useScanStore";
 export default function AnalysisScreen() {
   const { product, analysis } = useScanStore();
 
-  // 🔹 Fallback (if no data yet)
-  if (!product || !analysis) {
-    return (
-      <SafeAreaView className="flex-1 items-center justify-center">
-        <Text>No scan data available</Text>
-      </SafeAreaView>
-    );
-  }
+  const displayProduct = product || demoAnalysis.product;
+  const displayAnalysis = analysis || demoAnalysis.analysis;
 
   return (
     <SafeAreaView className="flex-1 bg-[#EEF3EC]">
@@ -34,7 +29,7 @@ export default function AnalysisScreen() {
           </Text>
 
           <Text className="text-2xl font-bold mt-2 text-gray-800">
-            {product.name}
+            {displayProduct.name}
           </Text>
 
           <Text className="text-gray-500 mt-1">{product.subtitle}</Text>
@@ -71,7 +66,9 @@ export default function AnalysisScreen() {
         <View className="mx-5 mt-4 bg-white rounded-3xl p-6 items-center">
           <Text className="text-xs text-gray-400">OVERALL HEALTH SCORE</Text>
 
-          <Text className="text-4xl font-bold mt-4">{analysis.score}</Text>
+          <Text className="text-4xl font-bold mt-4">
+            {displayAnalysis.score}
+          </Text>
 
           <Text className="text-gray-500 mt-2">{analysis.rating}</Text>
         </View>

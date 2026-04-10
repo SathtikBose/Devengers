@@ -119,7 +119,7 @@ export default function ProfileScreen() {
             icon="settings-outline"
             label="Settings"
             sub="App preferences"
-            onPress={() => router.push("./settings")}
+            onPress={() => router.push("../settings")}
           />
 
           <MenuItem
