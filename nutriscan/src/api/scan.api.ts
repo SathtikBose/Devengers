@@ -13,3 +13,14 @@ export const scanProductApi = async (barcode: string) => {
   const response = await apiClient.post("/scan", { barcode });
   return response.data;
 };
+
+/**
+ * 📷 Send Image (Base64) to Backend
+ */
+export const scanImageApi = async (base64: string) => {
+  const response = await apiClient.post("/scan/image", {
+    image: base64,
+  });
+
+  return response.data;
+};

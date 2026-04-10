@@ -2,123 +2,129 @@ import { View, Text, TouchableOpacity, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { CameraView, useCameraPermissions } from "expo-camera";
 import * as ImagePicker from "expo-image-picker";
-import { useState } from "react";
 import { useScan } from "../../src/hooks/useScan";
 
 /**
- * 📷 REAL Scan Screen
+ * 📷 Scan Screen (Base64 Image Scan)
  */
 export default function ScanScreen() {
   const router = useRouter();
-  const { scan } = useScan();
-
-  const [permission, requestPermission] = useCameraPermissions();
-  const [flash, setFlash] = useState<"off" | "on">("off");
+  const { scanFromImage, loading } = useScan();
 
   /**
-   * 🔹 Handle Barcode Scan
+   * 📸 Take Photo → Convert → Send
    */
-  const handleScan = async ({ data }: any) => {
-    const res = await scan(data);
+  const takePhoto = async () => {
+    try {
+      const result = await ImagePicker.launchCameraAsync({
+        base64: true,
+        quality: 0.5,
+      });
 
-    if (res.success) {
-      router.push("/(tabs)/analysis");
+      if (!result.canceled) {
+        const base64 = result.assets[0].base64;
+
+        if (!base64) {
+          return Alert.alert("Error", "Failed to read image");
+        }
+
+        const res = await scanFromImage(base64);
+
+        if (res.success) {
+          router.push("/(tabs)/analysis");
+        } else {
+          Alert.alert("Error", res.message);
+        }
+      }
+    } catch (error) {
+      Alert.alert("Error", "Camera failed");
     }
   };
 
   /**
-   * 🔹 Pick Image
+   * 🖼️ Pick Image → Convert → Send
    */
   const pickImage = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-    });
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        base64: true,
+        quality: 0.5,
+      });
 
-    if (!result.canceled) {
-      Alert.alert("Image selected (mock scan)");
-      await scan("mock-barcode");
-      router.push("/(tabs)/analysis");
+      if (!result.canceled) {
+        const base64 = result.assets[0].base64;
+
+        if (!base64) {
+          return Alert.alert("Error", "Failed to read image");
+        }
+
+        const res = await scanFromImage(base64);
+
+        if (res.success) {
+          router.push("/(tabs)/analysis");
+        } else {
+          Alert.alert("Error", res.message);
+        }
+      }
+    } catch (error) {
+      Alert.alert("Error", "Gallery failed");
     }
   };
 
-  /**
-   * 🔹 Permission Handling
-   */
-  if (!permission) return <View />;
-
-  if (!permission.granted) {
-    return (
-      <SafeAreaView className="flex-1 items-center justify-center">
-        <Text>Camera permission required</Text>
-        <TouchableOpacity
-          onPress={requestPermission}
-          className="bg-green-600 px-4 py-2 mt-4 rounded"
-        >
-          <Text className="text-white">Allow Camera</Text>
-        </TouchableOpacity>
-      </SafeAreaView>
-    );
-  }
-
   return (
-    <SafeAreaView className="flex-1 bg-black">
-      {/* 🔹 Camera */}
-      <CameraView
-        style={{ flex: 1 }}
-        facing="back"
-        enableTorch={flash === "on"}
-        onBarcodeScanned={handleScan}
-      />
+    <SafeAreaView className="flex-1 bg-[#0F2E1D]">
+      {/* 🔹 Header */}
+      <View className="flex-row justify-between items-center px-5 py-4">
+        <TouchableOpacity onPress={() => router.back()}>
+          <Ionicons name="arrow-back" size={22} color="white" />
+        </TouchableOpacity>
 
-      {/* 🔹 Overlay UI */}
-      <View className="absolute top-0 left-0 right-0 bottom-0 justify-between">
-        {/* Header */}
-        <View className="flex-row justify-between px-5 py-5">
-          <TouchableOpacity onPress={() => router.back()}>
-            <Ionicons name="arrow-back" size={24} color="white" />
-          </TouchableOpacity>
+        <Text className="text-white font-semibold text-lg">NutriScan</Text>
 
-          <Text className="text-white font-semibold text-lg">NutriScan</Text>
+        <Ionicons name="information-circle-outline" size={22} color="white" />
+      </View>
 
-          <TouchableOpacity
-            onPress={() => setFlash(flash === "on" ? "off" : "on")}
-          >
-            <Ionicons
-              name={flash === "on" ? "flash" : "flash-off"}
-              size={22}
-              color="white"
-            />
-          </TouchableOpacity>
+      {/* 🔹 Scanner Frame UI */}
+      <View className="flex-1 justify-center items-center">
+        <View className="w-72 h-72 border-2 border-green-400 rounded-3xl items-center justify-center">
+          <View className="w-full h-[2px] bg-green-400" />
         </View>
 
-        {/* Bottom Controls */}
-        <View className="flex-row justify-between items-center px-10 mb-10">
-          {/* Gallery */}
-          <TouchableOpacity onPress={pickImage} className="items-center">
-            <View className="bg-black/50 p-4 rounded-full">
-              <Ionicons name="image-outline" size={20} color="white" />
-            </View>
-            <Text className="text-white text-xs mt-2">UPLOAD</Text>
-          </TouchableOpacity>
+        <Text className="text-white/80 mt-6 text-sm">
+          Center the nutritional facts in the frame
+        </Text>
+      </View>
 
-          {/* Scan Button */}
-          <TouchableOpacity className="bg-white p-6 rounded-full">
-            <MaterialIcons name="qr-code-scanner" size={28} color="#166534" />
-          </TouchableOpacity>
+      {/* 🔹 Controls */}
+      <View className="flex-row justify-between items-center px-10 mb-10">
+        {/* Gallery */}
+        <TouchableOpacity onPress={pickImage} className="items-center">
+          <View className="bg-black/40 p-4 rounded-full">
+            <Ionicons name="image-outline" size={22} color="white" />
+          </View>
+          <Text className="text-white text-xs mt-2">UPLOAD</Text>
+        </TouchableOpacity>
 
-          {/* Recent */}
-          <TouchableOpacity
-            onPress={() => router.push("/(tabs)/history")}
-            className="items-center"
-          >
-            <View className="bg-black/50 p-4 rounded-full">
-              <Ionicons name="time-outline" size={20} color="white" />
-            </View>
-            <Text className="text-white text-xs mt-2">RECENT</Text>
-          </TouchableOpacity>
-        </View>
+        {/* Camera Button */}
+        <TouchableOpacity
+          onPress={takePhoto}
+          disabled={loading}
+          className="bg-white p-6 rounded-full"
+        >
+          <MaterialIcons name="qr-code-scanner" size={28} color="#166534" />
+        </TouchableOpacity>
+
+        {/* History */}
+        <TouchableOpacity
+          onPress={() => router.push("/(tabs)/history")}
+          className="items-center"
+        >
+          <View className="bg-black/40 p-4 rounded-full">
+            <Ionicons name="time-outline" size={22} color="white" />
+          </View>
+          <Text className="text-white text-xs mt-2">RECENT</Text>
+        </TouchableOpacity>
       </View>
     </SafeAreaView>
   );
