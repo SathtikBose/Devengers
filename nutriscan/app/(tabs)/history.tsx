@@ -10,6 +10,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
 import { mockHistory } from "../../src/api/mock";
+import { useScanStore } from "../../src/store/useScanStore";
 
 /**
  * 📜 History Screen
@@ -21,6 +22,7 @@ export default function HistoryScreen() {
   const [scans, setScans] = useState<any[]>([]);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
+  const history = useScanStore((state) => state.history);
 
   /**
    * 🔹 Fetch history (mock or API)
@@ -37,7 +39,8 @@ export default function HistoryScreen() {
   /**
    * 🔹 Filtered Data
    */
-  const filteredScans = scans.filter((item) => {
+
+  const filteredScans = history.filter((item) => {
     const matchesSearch = item.name
       .toLowerCase()
       .includes(search.toLowerCase());

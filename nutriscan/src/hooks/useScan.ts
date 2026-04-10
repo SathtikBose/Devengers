@@ -4,7 +4,8 @@ import { useScanStore } from "../store/useScanStore";
 
 /**
  * 📦 Scan Hook
- * Handles scanning logic
+ * - Handles scan logic
+ * - Stores result + history via Zustand
  */
 export const useScan = () => {
   const [loading, setLoading] = useState(false);
@@ -13,7 +14,8 @@ export const useScan = () => {
 
   /**
    * 🔹 Scan Product
-   * Calls API → stores result
+   * - Calls API (mock or real)
+   * - Saves to global store (product + history)
    */
   const scan = async (barcode: string) => {
     try {
@@ -21,14 +23,15 @@ export const useScan = () => {
 
       const data = await scanProductApi(barcode);
 
-      // Save result globally
+      // 🔹 This automatically updates:
+      // product + analysis + history (from store logic)
       setScanResult(data);
 
       return { success: true };
     } catch (error: any) {
       return {
         success: false,
-        message: error.response?.data?.message || "Scan failed",
+        message: error?.response?.data?.message || "Scan failed",
       };
     } finally {
       setLoading(false);
