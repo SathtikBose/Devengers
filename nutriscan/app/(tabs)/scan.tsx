@@ -3,6 +3,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
+import * as ImageManipulator from "expo-image-manipulator";
 import { useState } from "react";
 import { useScan } from "../../src/hooks/useScan";
 
@@ -14,9 +15,27 @@ import { useScan } from "../../src/hooks/useScan";
  */
 export default function ScanScreen() {
   const router = useRouter();
-  const { scanFromImage } = useScan();
+  const { scanFromImage, scanFromBarcode } = useScan();
 
   const [barcode, setBarcode] = useState("");
+
+  const prepareImageBase64 = async (asset: ImagePicker.ImagePickerAsset) => {
+    if (asset.base64 && asset.base64.length < 2_500_000) {
+      return asset.base64;
+    }
+
+    const manipulated = await ImageManipulator.manipulateAsync(
+      asset.uri,
+      [{ resize: { width: 1280 } }],
+      {
+        compress: 0.6,
+        format: ImageManipulator.SaveFormat.JPEG,
+        base64: true,
+      },
+    );
+
+    return manipulated.base64;
+  };
 
   /**
    * 📸 Capture Image → Base64
@@ -28,7 +47,7 @@ export default function ScanScreen() {
     });
 
     if (!result.canceled) {
-      const base64 = result.assets[0].base64;
+      const base64 = await prepareImageBase64(result.assets[0]);
 
       if (!base64) {
         return Alert.alert("Error", "Failed to capture image");
@@ -38,6 +57,8 @@ export default function ScanScreen() {
 
       if (res.success) {
         router.push("/(tabs)/analysis");
+      } else {
+        Alert.alert("Scan failed", res.message);
       }
     }
   };
@@ -52,7 +73,7 @@ export default function ScanScreen() {
     });
 
     if (!result.canceled) {
-      const base64 = result.assets[0].base64;
+      const base64 = await prepareImageBase64(result.assets[0]);
 
       if (!base64) {
         return Alert.alert("Error", "Failed to read image");
@@ -62,6 +83,8 @@ export default function ScanScreen() {
 
       if (res.success) {
         router.push("/(tabs)/analysis");
+      } else {
+        Alert.alert("Scan failed", res.message);
       }
     }
   };
@@ -74,11 +97,12 @@ export default function ScanScreen() {
       return Alert.alert("Enter barcode");
     }
 
-    // 🔹 reuse same API (or create barcode API later)
-    const res = await scanFromImage(barcode);
+    const res = await scanFromBarcode(barcode);
 
     if (res.success) {
       router.push("/(tabs)/analysis");
+    } else {
+      Alert.alert("Barcode scan failed", res.message);
     }
   };
 

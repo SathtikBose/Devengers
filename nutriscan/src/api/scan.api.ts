@@ -10,7 +10,11 @@ export const scanProductApi = async (barcode: string) => {
     return await mockScan(barcode);
   }
 
-  const response = await apiClient.post("/scan", { barcode });
+  const response = await apiClient.post(
+    "/scan/barcode",
+    { barcode },
+    { timeout: 30000 },
+  );
   return response.data;
 };
 
@@ -26,14 +30,30 @@ export const scanImageApi = async (base64: string) => {
       return await mockScan("image-scan");
     }
 
-    const response = await apiClient.post("/scan/image", {
-      image: base64,
-    });
+    // ✅ Make sure base64 is clean (no data URI prefix)
+    const cleanBase64 = base64.includes(",") ? base64.split(",")[1] : base64;
+
+    console.log("📤 Sending base64 length:", cleanBase64.length);
+
+    const response = await apiClient.post(
+      "/scan/image",
+      {
+        image: cleanBase64,
+      },
+      {
+        timeout: 60000,
+      },
+    );
 
     console.log("✅ Real API scan response:", response.data);
     return response.data;
   } catch (error: any) {
-    console.error("❌ Scan API error:", error);
+    console.error("❌ Scan API error:", {
+      message: error?.message,
+      code: error?.code,
+      status: error?.response?.status,
+      response: error?.response?.data,
+    });
     throw error;
   }
 };

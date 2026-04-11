@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { scanImageApi } from "../api/scan.api";
+import { scanImageApi, scanProductApi } from "../api/scan.api";
 import { useScanStore } from "../store/useScanStore";
 
 /**
@@ -35,10 +35,57 @@ export const useScan = () => {
 
       return { success: true };
     } catch (error: any) {
-      console.error("❌ Scan error:", error);
+      console.error("❌ Scan error:", {
+        message: error?.message,
+        code: error?.code,
+        status: error?.response?.status,
+        response: error?.response?.data,
+      });
       return {
         success: false,
-        message: "Scan failed: " + error?.message,
+        message:
+          error?.response?.data?.message || "Scan failed: " + error?.message,
+      };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const scanFromBarcode = async (barcode: string) => {
+    try {
+      setLoading(true);
+
+      const data = await scanProductApi(barcode);
+
+      if (!data || !data.analysis) {
+        return {
+          success: false,
+          message: "Invalid barcode scan response",
+        };
+      }
+
+      setScanResult({
+        product: data.product || {
+          name: barcode,
+          subtitle: "Barcode scan",
+          image: "",
+        },
+        analysis: data.analysis,
+      });
+
+      return { success: true };
+    } catch (error: any) {
+      console.error("❌ Barcode scan error:", {
+        message: error?.message,
+        code: error?.code,
+        status: error?.response?.status,
+        response: error?.response?.data,
+      });
+      return {
+        success: false,
+        message:
+          error?.response?.data?.message ||
+          "Barcode scan failed: " + error?.message,
       };
     } finally {
       setLoading(false);
@@ -47,6 +94,7 @@ export const useScan = () => {
 
   return {
     scanFromImage,
+    scanFromBarcode,
     loading,
   };
 };

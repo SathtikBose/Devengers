@@ -16,7 +16,19 @@ exports.signup = async (req, res, next) => {
     const hashed = await hashPassword(password);
     const user = await User.create({ name, email, password: hashed });
     const token = generateToken(user._id);
-    res.status(201).json({ token });
+
+    // ✅ Return BOTH user and token
+    res.status(201).json({
+      token,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        avatar: user.avatar || null,
+        allergies: user.allergies || [],
+        diet: user.diet || null,
+      },
+    });
   } catch (err) {
     next(err);
   }
@@ -37,7 +49,19 @@ exports.login = async (req, res, next) => {
       return res.status(401).json({ message: "Invalid credentials" });
     }
     const token = generateToken(user._id);
-    res.json({ token });
+
+    // ✅ Return BOTH user and token
+    res.status(200).json({
+      token,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        avatar: user.avatar || null,
+        allergies: user.allergies || [],
+        diet: user.diet || null,
+      },
+    });
   } catch (err) {
     next(err);
   }

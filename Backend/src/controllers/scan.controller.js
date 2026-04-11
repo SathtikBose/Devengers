@@ -16,9 +16,13 @@ exports.scanImage = async (req, res, next) => {
   try {
     const { image } = req.body;
     if (!image) return res.status(400).json({ message: "Image is required" });
-    // Convert base64 to buffer
-    const buffer = Buffer.from(image, "base64");
-    // Upload to Cloudinary
+
+    // ✅ Clean base64 if it has data URI prefix
+    const cleanBase64 = image.includes(",") ? image.split(",")[1] : image;
+
+    const buffer = Buffer.from(cleanBase64, "base64");
+
+    // ✅ Upload to Cloudinary
     let cloudinaryUrl;
     await new Promise((resolve, reject) => {
       const uploadStream = cloudinary.uploader.upload_stream(
@@ -31,31 +35,43 @@ exports.scanImage = async (req, res, next) => {
       );
       bufferToStream(buffer).pipe(uploadStream);
     });
-    // Use image hash as cache key
+
+    // ✅ Cache check using hash of CLEAN base64
     const key = require("crypto")
       .createHash("sha256")
-      .update(image)
+      .update(cleanBase64)
       .digest("hex");
+
     let cached = await ProductCache.findOne({ key });
     let result;
+
     if (cached) {
+      console.log("✅ Cache hit!");
       result = cached.result;
     } else {
+      console.log("🤖 Calling Gemini AI...");
       result = await aiService.analyzeImage(cloudinaryUrl);
       await ProductCache.create({ key, result });
     }
+
     const scan = await Scan.create({
       user: req.user._id,
       type: "image",
       image: cloudinaryUrl,
       result,
     });
-    res.json({ scan, analysis: result });
+
+    res.json({
+      scan,
+      // ✅ Frontend expects { product, analysis } format
+      product: result.product,
+      analysis: result.analysis,
+    });
   } catch (err) {
+    console.error("❌ Scan error:", err);
     next(err);
   }
 };
-
 exports.scanBarcode = async (req, res, next) => {
   try {
     const { barcode } = req.body;
