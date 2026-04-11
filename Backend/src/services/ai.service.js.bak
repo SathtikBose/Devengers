@@ -1,0 +1,33 @@
+const axios = require("axios");
+
+exports.analyzeImage = async (imageUrl) => {
+  // Replace with your AI API endpoint and key
+  const apiKey = process.env.AI_API_KEY;
+  const endpoint = process.env.AI_API_ENDPOINT;
+  const response = await axios.post(
+    endpoint,
+    {
+      image: imageUrl,
+    },
+    {
+      headers: { Authorization: `Bearer ${apiKey}` },
+    },
+  );
+  return response.data;
+};
+
+exports.analyzeBarcode = async (barcode) => {
+  // Replace with your AI API endpoint and key
+  const apiKey = process.env.AI_API_KEY;
+  const endpoint = process.env.AI_API_ENDPOINT;
+  const response = await axios.post(
+    endpoint,
+    {
+      barcode,
+    },
+    {
+      headers: { Authorization: `Bearer ${apiKey}` },
+    },
+  );
+  return response.data;
+};

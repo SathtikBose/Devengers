@@ -134,10 +134,6 @@ export default function SettingsScreen() {
                 className="font-semibold text-gray-800"
               />
               <Text className="text-gray-500 text-sm">{user?.email}</Text>
-
-              <View className="bg-green-100 px-2 py-1 rounded-full mt-1">
-                <Text className="text-green-700 text-xs">PREMIUM MEMBER</Text>
-              </View>
             </View>
           </View>
 

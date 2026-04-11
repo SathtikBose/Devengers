@@ -46,12 +46,6 @@ export default function ProfileScreen() {
             {user?.name || "Guest User"}
           </Text>
 
-          <View className="bg-green-100 px-3 py-1 rounded-full mt-2">
-            <Text className="text-green-700 text-xs font-semibold">
-              PREMIUM MEMBER
-            </Text>
-          </View>
-
           <Text className="text-gray-500 mt-2">
             {user?.email || "email@example.com"}
           </Text>
