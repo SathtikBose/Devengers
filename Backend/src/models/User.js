@@ -8,6 +8,9 @@ const UserSchema = new mongoose.Schema(
     avatar: { type: String },
     allergies: [{ type: String }],
     diet: { type: String },
+    passwordResetToken: { type: String },
+    passwordResetCode: { type: String },
+    passwordResetExpires: { type: Date },
   },
   { timestamps: true },
 );

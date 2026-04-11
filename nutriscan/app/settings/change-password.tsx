@@ -11,6 +11,7 @@ import { Ionicons, Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { useAuth } from "../../src/hooks/useAuth";
+import { useToast } from "../../src/hooks/useToast";
 
 /**
  * 🔐 Change Password Screen
@@ -20,37 +21,50 @@ import { useAuth } from "../../src/hooks/useAuth";
 export default function ChangePasswordScreen() {
   const router = useRouter();
   const { changePassword, loading } = useAuth();
+  const toast = useToast();
 
   const [current, setCurrent] = useState("");
   const [newPass, setNewPass] = useState("");
   const [confirm, setConfirm] = useState("");
-
-  const [secure1, setSecure1] = useState(true);
-  const [secure2, setSecure2] = useState(true);
 
   /**
    * 🔹 Submit handler
    */
   const handleSubmit = async () => {
     if (!current || !newPass || !confirm) {
-      return alert("All fields are required");
+      return toast.error({
+        title: "Missing fields",
+        message: "Please complete all password fields.",
+      });
     }
 
     if (newPass !== confirm) {
-      return alert("Passwords do not match");
+      return toast.error({
+        title: "Passwords do not match",
+        message: "Enter the same new password in both fields.",
+      });
     }
 
     if (newPass.length < 8) {
-      return alert("Password must be at least 8 characters");
+      return toast.error({
+        title: "Password too short",
+        message: "Use at least 8 characters for your new password.",
+      });
     }
 
     const res = await changePassword(current, newPass);
 
     if (res.success) {
-      alert("Password updated successfully");
+      toast.success({
+        title: "Password updated",
+        message: "Your account password has been changed successfully.",
+      });
       router.back();
     } else {
-      alert(res.message);
+      toast.error({
+        title: "Update failed",
+        message: res.message || "Unable to update password right now.",
+      });
     }
   };
 

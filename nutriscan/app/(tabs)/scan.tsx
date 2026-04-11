@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, TextInput, Alert } from "react-native";
+import { View, Text, TouchableOpacity, TextInput } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
@@ -6,6 +6,7 @@ import * as ImagePicker from "expo-image-picker";
 import * as ImageManipulator from "expo-image-manipulator";
 import { useState } from "react";
 import { useScan } from "../../src/hooks/useScan";
+import { useToast } from "../../src/hooks/useToast";
 
 /**
  * 📷 Multi Input Scan Screen
@@ -16,6 +17,7 @@ import { useScan } from "../../src/hooks/useScan";
 export default function ScanScreen() {
   const router = useRouter();
   const { scanFromImage, scanFromBarcode } = useScan();
+  const toast = useToast();
 
   const [barcode, setBarcode] = useState("");
 
@@ -50,7 +52,10 @@ export default function ScanScreen() {
       const base64 = await prepareImageBase64(result.assets[0]);
 
       if (!base64) {
-        return Alert.alert("Error", "Failed to capture image");
+        return toast.error({
+          title: "Capture failed",
+          message: "We could not prepare that image for scanning.",
+        });
       }
 
       const res = await scanFromImage(base64);
@@ -58,7 +63,10 @@ export default function ScanScreen() {
       if (res.success) {
         router.push("/(tabs)/analysis");
       } else {
-        Alert.alert("Scan failed", res.message);
+        toast.error({
+          title: "Scan failed",
+          message: res.message || "We could not scan that image.",
+        });
       }
     }
   };
@@ -76,7 +84,10 @@ export default function ScanScreen() {
       const base64 = await prepareImageBase64(result.assets[0]);
 
       if (!base64) {
-        return Alert.alert("Error", "Failed to read image");
+        return toast.error({
+          title: "Image read failed",
+          message: "We could not read that image.",
+        });
       }
 
       const res = await scanFromImage(base64);
@@ -84,7 +95,10 @@ export default function ScanScreen() {
       if (res.success) {
         router.push("/(tabs)/analysis");
       } else {
-        Alert.alert("Scan failed", res.message);
+        toast.error({
+          title: "Scan failed",
+          message: res.message || "We could not scan that image.",
+        });
       }
     }
   };
@@ -94,7 +108,10 @@ export default function ScanScreen() {
    */
   const handleBarcodeSubmit = async () => {
     if (!barcode.trim()) {
-      return Alert.alert("Enter barcode");
+      return toast.info({
+        title: "Barcode required",
+        message: "Enter a barcode before submitting.",
+      });
     }
 
     const res = await scanFromBarcode(barcode);
@@ -102,7 +119,10 @@ export default function ScanScreen() {
     if (res.success) {
       router.push("/(tabs)/analysis");
     } else {
-      Alert.alert("Barcode scan failed", res.message);
+      toast.error({
+        title: "Barcode scan failed",
+        message: res.message || "We could not scan that barcode.",
+      });
     }
   };
 

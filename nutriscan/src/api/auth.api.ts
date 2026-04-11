@@ -69,8 +69,31 @@ export const updateProfileApi = async (formData: FormData) => {
 /**
  * 🔑 Password Reset (Send Link)
  */
-export const requestPasswordResetApi = async (email: string) => {
-  const response = await apiClient.post("/auth/forgot-password", { email });
+export const requestPasswordResetCodeApi = async (email: string) => {
+  const response = await apiClient.post("/auth/forgot-password/send-code", {
+    email,
+  });
+  return response.data;
+};
+
+export const verifyPasswordResetCodeApi = async (data: {
+  email: string;
+  code: string;
+}) => {
+  const response = await apiClient.post(
+    "/auth/forgot-password/verify-code",
+    data,
+  );
+  return response.data;
+};
+
+export const resetPasswordWithCodeApi = async (data: {
+  email: string;
+  code: string;
+  password: string;
+  confirmPassword: string;
+}) => {
+  const response = await apiClient.post("/auth/forgot-password/reset", data);
   return response.data;
 };
 

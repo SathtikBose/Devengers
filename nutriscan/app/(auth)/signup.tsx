@@ -11,6 +11,7 @@ import { Ionicons, Feather } from "@expo/vector-icons";
 import { useState } from "react";
 import { useRouter } from "expo-router";
 import { useAuth } from "../../src/hooks/useAuth";
+import { useToast } from "../../src/hooks/useToast";
 
 /**
  * 🧾 Signup Screen
@@ -21,6 +22,7 @@ import { useAuth } from "../../src/hooks/useAuth";
 export default function SignupScreen() {
   const router = useRouter();
   const { handleSignup, loading } = useAuth();
+  const toast = useToast();
 
   // 🔹 Form state
   const [name, setName] = useState("");
@@ -36,11 +38,17 @@ export default function SignupScreen() {
    */
   const onSignup = async () => {
     if (!name || !email || !password || !confirmPassword) {
-      return alert("All fields are required");
+      return toast.error({
+        title: "Missing fields",
+        message: "Please fill in all the required account details.",
+      });
     }
 
     if (password !== confirmPassword) {
-      return alert("Passwords do not match");
+      return toast.error({
+        title: "Passwords do not match",
+        message: "Enter the same password in both fields.",
+      });
     }
 
     const res = await handleSignup(name, email, password);
@@ -48,7 +56,10 @@ export default function SignupScreen() {
     if (res.success) {
       router.replace("/(tabs)/dashboard");
     } else {
-      alert(res.message);
+      toast.error({
+        title: "Signup failed",
+        message: res.message || "We could not create your account right now.",
+      });
     }
   };
 

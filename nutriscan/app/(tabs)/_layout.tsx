@@ -34,7 +34,7 @@ export default function TabsLayout() {
           tabBarIcon: ({ color, size, focused }) => (
             <View
               className={`items-center justify-center ${
-                focused ? "bg-green-100 px-3 py-1 rounded-xl" : ""
+                focused ? "bg-green-100 px-1 py-1 rounded-xl" : ""
               }`}
             >
               <MaterialIcons name="dashboard" size={20} color={color} />

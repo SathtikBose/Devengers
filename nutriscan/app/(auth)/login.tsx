@@ -11,6 +11,7 @@ import { Ionicons, Feather } from "@expo/vector-icons";
 import { useState } from "react";
 import { useRouter } from "expo-router";
 import { useAuth } from "../../src/hooks/useAuth";
+import { useToast } from "../../src/hooks/useToast";
 
 /**
  * 🔐 Login Screen
@@ -20,6 +21,7 @@ import { useAuth } from "../../src/hooks/useAuth";
 export default function LoginScreen() {
   const router = useRouter();
   const { handleLogin, loading } = useAuth();
+  const toast = useToast();
 
   // 🔹 Local state for form
   const [email, setEmail] = useState("");
@@ -31,14 +33,22 @@ export default function LoginScreen() {
    * Calls login hook and redirects on success
    */
   const onLogin = async () => {
-    if (!email || !password) return;
+    if (!email || !password) {
+      return toast.error({
+        title: "Missing details",
+        message: "Enter both your email and password to continue.",
+      });
+    }
 
     const res = await handleLogin(email, password);
 
     if (res.success) {
       router.replace("/(tabs)/dashboard");
     } else {
-      alert(res.message);
+      toast.error({
+        title: "Login failed",
+        message: res.message || "Unable to sign you in right now.",
+      });
     }
   };
 

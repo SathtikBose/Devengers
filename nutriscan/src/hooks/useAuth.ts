@@ -4,7 +4,9 @@ import {
   signupApi,
   updateProfileApi,
   changePasswordApi,
-  requestPasswordResetApi,
+  requestPasswordResetCodeApi,
+  verifyPasswordResetCodeApi,
+  resetPasswordWithCodeApi,
 } from "../api/auth.api";
 import { useAuthStore } from "../store/useAuthStore";
 import { ENV } from "../config/env";
@@ -157,13 +159,60 @@ export const useAuth = () => {
     try {
       setLoading(true);
 
-      await requestPasswordResetApi(email);
+      await requestPasswordResetCodeApi(email);
 
       return { success: true };
     } catch (error: any) {
       return {
         success: false,
-        message: error?.response?.data?.message || "Failed to send reset link",
+        message:
+          error?.response?.data?.message || "Failed to send verification code",
+      };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const verifyPasswordResetCode = async (email: string, code: string) => {
+    try {
+      setLoading(true);
+
+      await verifyPasswordResetCodeApi({ email, code });
+
+      return { success: true };
+    } catch (error: any) {
+      return {
+        success: false,
+        message:
+          error?.response?.data?.message || "Failed to verify code",
+      };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const resetPasswordWithCode = async (
+    email: string,
+    code: string,
+    password: string,
+    confirmPassword: string,
+  ) => {
+    try {
+      setLoading(true);
+
+      await resetPasswordWithCodeApi({
+        email,
+        code,
+        password,
+        confirmPassword,
+      });
+
+      return { success: true };
+    } catch (error: any) {
+      return {
+        success: false,
+        message:
+          error?.response?.data?.message || "Failed to reset password",
       };
     } finally {
       setLoading(false);
@@ -176,6 +225,8 @@ export const useAuth = () => {
     uploadAvatar,
     changePassword,
     requestPasswordReset,
+    verifyPasswordResetCode,
+    resetPasswordWithCode,
     loading,
   };
 };

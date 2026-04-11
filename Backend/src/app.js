@@ -17,6 +17,10 @@ app.use(express.json({ limit: "25mb" }));
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan("dev"));
 
+app.use("/health-check", (req, res) => {
+  res.send("working");
+});
+
 app.use("/auth", require("./routes/auth.routes"));
 app.use("/user", require("./routes/user.routes"));
 app.use("/scan", require("./routes/scan.routes"));

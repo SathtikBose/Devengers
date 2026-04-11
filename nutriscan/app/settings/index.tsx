@@ -6,7 +6,8 @@ import {
   Switch,
   Image,
   TextInput,
-  Alert,
+  Modal,
+  Pressable,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -16,6 +17,7 @@ import { useAppStore } from "../../src/store/useAppStore";
 import { useAuth } from "../../src/hooks/useAuth";
 import { useState } from "react";
 import { useRouter } from "expo-router";
+import { useToast } from "../../src/hooks/useToast";
 
 /**
  * ⚙️ Settings Screen (FINAL)
@@ -26,43 +28,50 @@ export default function SettingsScreen() {
   const { user, updateUser, logout } = useAuthStore();
   const { isDarkMode, toggleDarkMode } = useAppStore();
   const { uploadAvatar } = useAuth();
+  const toast = useToast();
 
   const [name, setName] = useState(user?.name || "");
   const [allergyInput, setAllergyInput] = useState("");
+  const [imagePickerVisible, setImagePickerVisible] = useState(false);
 
   /**
    * 📸 Pick Image (Camera + Gallery)
    */
-  const pickImage = async () => {
-    Alert.alert("Select Image", "Choose option", [
-      {
-        text: "Camera",
-        onPress: async () => {
-          const res = await ImagePicker.launchCameraAsync();
+  const syncAvatar = async (uri: string) => {
+    updateUser({ avatar: uri });
 
-          if (!res.canceled) {
-            const uri = res.assets[0].uri;
+    const res = await uploadAvatar(uri);
 
-            updateUser({ avatar: uri }); // instant UI
-            await uploadAvatar(uri); // backend sync
-          }
-        },
-      },
-      {
-        text: "Gallery",
-        onPress: async () => {
-          const res = await ImagePicker.launchImageLibraryAsync();
+    if (!res.success) {
+      toast.error({
+        title: "Upload failed",
+        message: res.message || "We could not update your profile photo.",
+      });
+      return;
+    }
 
-          if (!res.canceled) {
-            const uri = res.assets[0].uri;
+    toast.success({
+      title: "Photo updated",
+      message: "Your profile photo has been updated.",
+    });
+  };
 
-            updateUser({ avatar: uri });
-            await uploadAvatar(uri);
-          }
-        },
-      },
-      { text: "Cancel", style: "cancel" },
-    ]);
+  const openCamera = async () => {
+    setImagePickerVisible(false);
+    const res = await ImagePicker.launchCameraAsync();
+
+    if (!res.canceled) {
+      await syncAvatar(res.assets[0].uri);
+    }
+  };
+
+  const openGallery = async () => {
+    setImagePickerVisible(false);
+    const res = await ImagePicker.launchImageLibraryAsync();
+
+    if (!res.canceled) {
+      await syncAvatar(res.assets[0].uri);
+    }
   };
 
   /**
@@ -70,7 +79,10 @@ export default function SettingsScreen() {
    */
   const saveName = () => {
     updateUser({ name });
-    Alert.alert("Success", "Name updated");
+    toast.success({
+      title: "Profile updated",
+      message: "Your display name has been updated.",
+    });
   };
 
   /**
@@ -116,7 +128,7 @@ export default function SettingsScreen() {
         {/* 🔹 Account */}
         <View className="mx-5 bg-white rounded-3xl p-5 flex-row items-center justify-between">
           <View className="flex-row items-center gap-3">
-            <TouchableOpacity onPress={pickImage}>
+            <TouchableOpacity onPress={() => setImagePickerVisible(true)}>
               <Image
                 source={{
                   uri:
@@ -239,6 +251,50 @@ export default function SettingsScreen() {
 
         <View className="h-24" />
       </ScrollView>
+
+      <Modal
+        visible={imagePickerVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setImagePickerVisible(false)}
+      >
+        <Pressable
+          className="flex-1 justify-end bg-black/40"
+          onPress={() => setImagePickerVisible(false)}
+        >
+          <Pressable className="rounded-t-3xl bg-white px-5 pb-8 pt-5">
+            <Text className="text-lg font-semibold text-gray-900">
+              Update profile photo
+            </Text>
+            <Text className="mt-1 text-sm text-gray-500">
+              Choose where you want to pick your photo from.
+            </Text>
+
+            <TouchableOpacity
+              onPress={openCamera}
+              className="mt-5 rounded-2xl bg-[#E6EFE4] px-4 py-4"
+            >
+              <Text className="font-semibold text-gray-800">Use Camera</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={openGallery}
+              className="mt-3 rounded-2xl bg-[#E6EFE4] px-4 py-4"
+            >
+              <Text className="font-semibold text-gray-800">
+                Choose from Gallery
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => setImagePickerVisible(false)}
+              className="mt-3 rounded-2xl bg-gray-100 px-4 py-4"
+            >
+              <Text className="font-semibold text-gray-600">Cancel</Text>
+            </TouchableOpacity>
+          </Pressable>
+        </Pressable>
+      </Modal>
     </SafeAreaView>
   );
 }
