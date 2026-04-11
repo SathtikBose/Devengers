@@ -129,14 +129,6 @@ export default function LoginScreen() {
               </Text>
             </TouchableOpacity>
 
-            {/* 🔍 Demo Hint */}
-            <View className="bg-blue-50 p-3 rounded-lg mt-4 border border-blue-200">
-              <Text className="text-blue-700 text-xs">
-                <Text className="font-semibold">💡 Demo Mode:</Text> Login with
-                any credentials.
-              </Text>
-            </View>
-
             {/* Divider */}
             <View className="flex-row items-center my-6">
               <View className="flex-1 h-[1px] bg-gray-200" />
