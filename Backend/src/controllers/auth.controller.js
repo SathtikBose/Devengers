@@ -307,6 +307,7 @@ exports.signup = async (req, res, next) => {
         avatar: user.avatar || null,
         allergies: user.allergies || [],
         diet: user.diet || null,
+        healthProfile: user.healthProfile,
       },
     });
   } catch (err) {
@@ -340,6 +341,7 @@ exports.login = async (req, res, next) => {
         avatar: user.avatar || null,
         allergies: user.allergies || [],
         diet: user.diet || null,
+        healthProfile: user.healthProfile,
       },
     });
   } catch (err) {

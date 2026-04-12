@@ -1,6 +1,7 @@
 const Scan = require("../models/Scan");
 const ProductCache = require("../models/ProductCache");
 const aiService = require("../services/ai.service");
+const { refreshUserHealthProfile } = require("../services/health-score.service");
 const cloudinary = require("../config/cloudinary");
 const mongoose = require("mongoose");
 const { Readable } = require("stream");
@@ -61,6 +62,12 @@ exports.scanImage = async (req, res, next) => {
       result,
     });
 
+    try {
+      await refreshUserHealthProfile(req.user._id);
+    } catch (e) {
+      console.error("Health profile refresh failed:", e);
+    }
+
     res.json({
       scan,
       // ✅ Frontend expects { product, analysis } format
@@ -91,6 +98,13 @@ exports.scanBarcode = async (req, res, next) => {
       barcode,
       result,
     });
+
+    try {
+      await refreshUserHealthProfile(req.user._id);
+    } catch (e) {
+      console.error("Health profile refresh failed:", e);
+    }
+
     res.json({ scan, analysis: result });
   } catch (err) {
     next(err);

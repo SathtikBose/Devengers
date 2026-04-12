@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import type { HealthProfile } from "../api/user.api";
 
 /**
  * 👤 User Type
@@ -12,6 +13,7 @@ type User = {
   avatar?: string;
   allergies?: string[];
   diet?: string;
+  healthProfile?: HealthProfile;
 };
 
 /**

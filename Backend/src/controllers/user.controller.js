@@ -1,9 +1,19 @@
 const User = require("../models/User");
 const cloudinary = require("../config/cloudinary");
+const { refreshUserHealthProfile } = require("../services/health-score.service");
 
 exports.getProfile = async (req, res, next) => {
   try {
     res.json(req.user);
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getHealthDashboard = async (req, res, next) => {
+  try {
+    const payload = await refreshUserHealthProfile(req.user._id);
+    res.json(payload);
   } catch (err) {
     next(err);
   }
