@@ -1,6 +1,7 @@
 import axios from "axios";
 import { ENV } from "../config/env";
 import { useAuthStore } from "../store/useAuthStore";
+import { useToastStore } from "../store/useToastStore";
 
 /**
  * 🔗 Axios Instance
@@ -38,6 +39,23 @@ apiClient.interceptors.response.use(
     // Example: auto logout on 401
     if (error.response?.status === 401) {
       useAuthStore.getState().logout();
+      useToastStore.getState().showToast({
+        type: "error",
+        title: "Session Expired",
+        message: "Please log in again.",
+      });
+    } else if (error.message === "Network Error" || !error.response) {
+      useToastStore.getState().showToast({
+        type: "error",
+        title: "Network Error",
+        message: "Could not connect to the server. Check your connection or IP address.",
+      });
+    } else {
+      useToastStore.getState().showToast({
+        type: "error",
+        title: "Error",
+        message: error.response?.data?.message || error.message || "An unexpected error occurred.",
+      });
     }
 
     return Promise.reject(error);
