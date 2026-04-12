@@ -5,42 +5,99 @@ import {
   TouchableOpacity,
   Image,
   ScrollView,
+  ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import { useEffect, useState } from "react";
-import { mockHistory } from "../../src/api/mock";
+import { useCallback, useState } from "react";
+import { useRouter } from "expo-router";
+import { useFocusEffect } from "@react-navigation/native";
+import { fetchScanHistoryApi, type ScanDocument } from "../../src/api/scan.api";
 import { useScanStore } from "../../src/store/useScanStore";
+import {
+  formatScanTime,
+  normalizeHistoryStatus,
+  scanMatchesTimeFilter,
+} from "../../src/utils/scanDisplay";
 
-/**
- * 📜 History Screen
- * - Shows scanned products from persistent storage
- * - Includes search + real-time filtering
- */
+const PLACEHOLDER_IMAGE =
+  "https://cdn-icons-png.flaticon.com/512/3075/3075977.png";
+
+type HistoryRow = {
+  id: string;
+  name: string;
+  brand: string;
+  status: string;
+  image: string;
+  createdAt: string;
+};
+
+function mapScanToRow(scan: ScanDocument): HistoryRow {
+  const product = scan.result?.product || {};
+  const analysis = scan.result?.analysis || {};
+  const raw = String(analysis.recommendation || "UNKNOWN").toUpperCase();
+  return {
+    id: String(scan._id),
+    name: product.name || scan.barcode || "Scanned product",
+    brand: product.subtitle || scan.type?.toUpperCase() || "",
+    status: normalizeHistoryStatus(raw),
+    image: (product.image || scan.image || "").trim() || PLACEHOLDER_IMAGE,
+    createdAt: scan.createdAt,
+  };
+}
+
 export default function HistoryScreen() {
-  const [activeFilter, setActiveFilter] = useState("All");
+  const router = useRouter();
+  const setPendingAnalysisScanId = useScanStore(
+    (s) => s.setPendingAnalysisScanId,
+  );
+
+  const [activeFilter, setActiveFilter] = useState<
+    "Today" | "This Week" | "All"
+  >("All");
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
-  const history = useScanStore((state) => state.history);
+  const [rows, setRows] = useState<HistoryRow[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  /**
-   * 🔹 Filtered Data
-   */
+  const loadHistory = useCallback(async () => {
+    setLoading(true);
+    try {
+      const scans = await fetchScanHistoryApi();
+      setRows(scans.map(mapScanToRow));
+    } catch {
+      setRows([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-  const filteredScans = history.filter((item) => {
-    const matchesSearch = item.name
-      .toLowerCase()
-      .includes(search.toLowerCase());
+  useFocusEffect(
+    useCallback(() => {
+      loadHistory();
+    }, [loadHistory]),
+  );
+
+  const filteredScans = rows.filter((item) => {
+    const matchesSearch =
+      item.name.toLowerCase().includes(search.toLowerCase()) ||
+      item.brand.toLowerCase().includes(search.toLowerCase());
 
     const matchesStatus = statusFilter ? item.status === statusFilter : true;
 
-    return matchesSearch && matchesStatus;
+    const matchesTime = scanMatchesTimeFilter(item.createdAt, activeFilter);
+
+    return matchesSearch && matchesStatus && matchesTime;
   });
+
+  const openScan = (id: string) => {
+    setPendingAnalysisScanId(id);
+    router.push("/(tabs)/analysis");
+  };
 
   return (
     <SafeAreaView className="flex-1 bg-[#EEF3EC]">
       <ScrollView showsVerticalScrollIndicator={false}>
-        {/* 🔹 Header */}
         <View className="flex-row items-center justify-between px-5 py-4">
           <Text className="text-xl font-bold text-green-700">Scan History</Text>
 
@@ -49,7 +106,6 @@ export default function HistoryScreen() {
           </View>
         </View>
 
-        {/* 🔹 Search */}
         <View className="mx-5 bg-[#E6EFE4] rounded-full px-4 py-3 flex-row items-center">
           <Ionicons name="search-outline" size={18} color="#6B7280" />
           <TextInput
@@ -60,9 +116,8 @@ export default function HistoryScreen() {
           />
         </View>
 
-        {/* 🔹 Time Filters (UI only for now) */}
         <View className="flex-row gap-3 px-5 mt-4">
-          {["Today", "This Week", "All"].map((item) => (
+          {(["Today", "This Week", "All"] as const).map((item) => (
             <TouchableOpacity
               key={item}
               onPress={() => setActiveFilter(item)}
@@ -81,8 +136,7 @@ export default function HistoryScreen() {
           ))}
         </View>
 
-        {/* 🔹 Status Filters */}
-        <View className="flex-row gap-3 px-5 mt-4">
+        <View className="flex-row gap-3 px-5 mt-4 flex-wrap">
           <StatusChip
             label="SAFE"
             color="green"
@@ -109,21 +163,39 @@ export default function HistoryScreen() {
           />
         </View>
 
-        {/* 🔹 Section Title */}
         <Text className="px-5 mt-6 text-gray-400 text-xs tracking-widest">
-          RECENT SCANS
+          ALL SCANS
         </Text>
 
-        {/* 🔹 List */}
         <View className="px-5 mt-3 gap-4">
-          {filteredScans.map((item) => (
-            <ScanCard key={item.id} item={item} />
-          ))}
-
-          {filteredScans.length === 0 && (
-            <Text className="text-center text-gray-400 mt-6">
-              No results found
-            </Text>
+          {loading ? (
+            <View className="py-12 items-center">
+              <ActivityIndicator size="large" color="#166534" />
+            </View>
+          ) : filteredScans.length === 0 ? (
+            <View className="items-center py-10 px-4">
+              <Text className="text-gray-500 text-center">
+                {rows.length === 0
+                  ? "You have no scans yet. Start by scanning a product."
+                  : "No scans match your filters."}
+              </Text>
+              {rows.length === 0 ? (
+                <TouchableOpacity
+                  onPress={() => router.push("/(tabs)/scan")}
+                  className="bg-green-600 mt-6 px-8 py-4 rounded-2xl"
+                >
+                  <Text className="text-white font-semibold">Scan now</Text>
+                </TouchableOpacity>
+              ) : null}
+            </View>
+          ) : (
+            filteredScans.map((item) => (
+              <ScanCard
+                key={item.id}
+                item={item}
+                onPress={() => openScan(item.id)}
+              />
+            ))
           )}
         </View>
 
@@ -133,10 +205,17 @@ export default function HistoryScreen() {
   );
 }
 
-/**
- * 🔹 Status Chip
- */
-function StatusChip({ label, color, active, onPress }: any) {
+function StatusChip({
+  label,
+  color,
+  active,
+  onPress,
+}: {
+  label: string;
+  color: string;
+  active: boolean;
+  onPress: () => void;
+}) {
   const bg =
     color === "green"
       ? active
@@ -168,10 +247,13 @@ function StatusChip({ label, color, active, onPress }: any) {
   );
 }
 
-/**
- * 🔹 Scan Card
- */
-function ScanCard({ item }: any) {
+function ScanCard({
+  item,
+  onPress,
+}: {
+  item: HistoryRow;
+  onPress: () => void;
+}) {
   const getStatusStyle = () => {
     switch (item.status) {
       case "SAFE":
@@ -181,17 +263,22 @@ function ScanCard({ item }: any) {
       case "AVOID":
         return "bg-red-100 text-red-700";
       default:
-        return "";
+        return "bg-gray-100 text-gray-700";
     }
   };
 
   return (
-    <TouchableOpacity className="bg-white p-4 rounded-2xl flex-row items-center justify-between">
-      {/* Left */}
-      <View className="flex-row items-center gap-3">
-        <Image source={{ uri: item.image }} className="w-14 h-14 rounded-xl" />
+    <TouchableOpacity
+      onPress={onPress}
+      className="bg-white p-4 rounded-2xl flex-row items-center justify-between active:opacity-90"
+    >
+      <View className="flex-row items-center gap-3 flex-1">
+        <Image
+          source={{ uri: item.image }}
+          className="w-14 h-14 rounded-xl"
+        />
 
-        <View>
+        <View className="flex-1">
           <Text className="font-semibold text-gray-800">{item.name}</Text>
           <Text className="text-gray-500 text-sm">{item.brand}</Text>
 
@@ -199,17 +286,14 @@ function ScanCard({ item }: any) {
             <View className={`px-2 py-1 rounded-full ${getStatusStyle()}`}>
               <Text className="text-xs font-semibold">{item.status}</Text>
             </View>
-
-            {item.note ? (
-              <Text className="text-xs text-gray-500">{item.note}</Text>
-            ) : null}
           </View>
         </View>
       </View>
 
-      {/* Right */}
-      <View className="items-end">
-        <Text className="text-gray-400 text-xs mb-2">{item.time}</Text>
+      <View className="items-end ml-2">
+        <Text className="text-gray-400 text-xs mb-2">
+          {formatScanTime(item.createdAt)}
+        </Text>
         <Ionicons name="chevron-forward" size={18} color="#9CA3AF" />
       </View>
     </TouchableOpacity>

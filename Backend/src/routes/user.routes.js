@@ -7,9 +7,11 @@ const {
   getProfile,
   getHealthDashboard,
   updateProfile,
+  patchProfile,
 } = require("../controllers/user.controller");
 
 router.get("/profile", auth, getProfile);
+router.patch("/profile", auth, patchProfile);
 router.get("/dashboard", auth, getHealthDashboard);
 router.put("/update-profile", auth, upload.single("avatar"), updateProfile);
 

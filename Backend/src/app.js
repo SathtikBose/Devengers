@@ -24,6 +24,7 @@ app.use("/health-check", (req, res) => {
 app.use("/auth", require("./routes/auth.routes"));
 app.use("/user", require("./routes/user.routes"));
 app.use("/scan", require("./routes/scan.routes"));
+app.use("/content", require("./routes/content.routes"));
 
 app.use(errorHandler);
 

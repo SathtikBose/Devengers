@@ -5,10 +5,14 @@ const {
   scanImage,
   scanBarcode,
   getHistory,
+  getLatestScan,
+  getScanById,
 } = require("../controllers/scan.controller");
 
 router.post("/image", auth, scanImage);
 router.post("/barcode", auth, scanBarcode);
+router.get("/history/latest", auth, getLatestScan);
+router.get("/history/:id", auth, getScanById);
 router.get("/history", auth, getHistory);
 
 module.exports = router;

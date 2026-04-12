@@ -136,7 +136,7 @@ function summariseScans(scans = []) {
   let previousWeekScore = 0;
   let previousWeekCount = 0;
 
-  const recentScans = scans.slice(0, 5).map((scan) => {
+  const recentScans = scans.slice(0, 3).map((scan) => {
     const analysis = getAnalysis(scan.result);
     const product = getProduct(scan.result);
     const scanScore = clamp(toNumber(analysis.score, 0), 0, 100);

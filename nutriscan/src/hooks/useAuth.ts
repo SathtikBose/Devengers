@@ -10,6 +10,7 @@ import {
 } from "../api/auth.api";
 import { useAuthStore } from "../store/useAuthStore";
 import { ENV } from "../config/env";
+import { mapApiUserToClient } from "../api/user.api";
 
 /**
  * 🔐 Auth Hook
@@ -36,7 +37,7 @@ export const useAuth = () => {
         };
       }
 
-      login(data.user, data.token);
+      login(mapApiUserToClient(data.user as Record<string, unknown>), data.token);
 
       return { success: true };
     } catch (error: any) {
@@ -72,7 +73,7 @@ export const useAuth = () => {
         };
       }
 
-      login(data.user, data.token);
+      login(mapApiUserToClient(data.user as Record<string, unknown>), data.token);
 
       return { success: true };
     } catch (error: any) {
@@ -115,8 +116,7 @@ export const useAuth = () => {
 
       const data = await updateProfileApi(formData);
 
-      // update store with backend response
-      updateUser(data.user);
+      updateUser(mapApiUserToClient(data as Record<string, unknown>));
 
       return { success: true };
     } catch (error: any) {

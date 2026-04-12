@@ -12,6 +12,11 @@ export const mockLogin = async () => {
       id: "1",
       name: "Elena Rodriguez",
       email: "elena.rodriguez@healthmail.com",
+      avatar: null,
+      age: null,
+      allergies: [],
+      diet: null,
+      createdAt: new Date().toISOString(),
     },
     token: "mock-token-123",
   };
@@ -96,6 +101,7 @@ export const mockScan = async (barcode: string) => {
   const random = products[Math.floor(Math.random() * products.length)];
 
   return {
+    scan: { _id: `mock-${Date.now()}` },
     product: {
       name: random.name,
       subtitle: random.subtitle,
@@ -103,21 +109,4 @@ export const mockScan = async (barcode: string) => {
     },
     analysis: random.analysis,
   };
-};
-
-/**
- * 🔹 History Mock
- */
-export const mockHistory = async () => {
-  await delay(500);
-
-  return products.map((p, i) => ({
-    id: i + 1,
-    name: p.name,
-    brand: p.subtitle,
-    status: p.analysis.recommendation,
-    note: "",
-    time: "Recently",
-    image: p.image,
-  }));
 };

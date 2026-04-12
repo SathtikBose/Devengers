@@ -44,6 +44,11 @@ export const signupApi = async (data: {
         id: "1",
         name: data.name,
         email: data.email,
+        avatar: null,
+        age: null,
+        allergies: [],
+        diet: null,
+        createdAt: new Date().toISOString(),
       },
       token: "mock-token-123",
     };

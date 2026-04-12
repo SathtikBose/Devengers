@@ -16,38 +16,11 @@ import {
   fetchHealthDashboardApi,
   type RecentScanItem,
 } from "../../src/api/user.api";
+import { useScanStore } from "../../src/store/useScanStore";
+import { formatScanTime } from "../../src/utils/scanDisplay";
 
 const PLACEHOLDER_IMAGE =
   "https://cdn-icons-png.flaticon.com/512/3075/3075977.png";
-
-function formatScanTime(iso: string) {
-  try {
-    const d = new Date(iso);
-    const now = new Date();
-    const sameDay =
-      d.getDate() === now.getDate() &&
-      d.getMonth() === now.getMonth() &&
-      d.getFullYear() === now.getFullYear();
-    const time = d.toLocaleTimeString(undefined, {
-      hour: "numeric",
-      minute: "2-digit",
-    });
-    if (sameDay) return `Today, ${time}`;
-    const yesterday = new Date(now);
-    yesterday.setDate(now.getDate() - 1);
-    const isYesterday =
-      d.getDate() === yesterday.getDate() &&
-      d.getMonth() === yesterday.getMonth() &&
-      d.getFullYear() === yesterday.getFullYear();
-    if (isYesterday) return `Yesterday, ${time}`;
-    return `${d.toLocaleDateString(undefined, {
-      month: "short",
-      day: "numeric",
-    })}, ${time}`;
-  } catch {
-    return "";
-  }
-}
 
 function healthStatusBadgeClasses(status: string) {
   switch (status.toUpperCase()) {
@@ -85,6 +58,9 @@ function scanRecommendationColor(status: string): "green" | "yellow" | "red" {
 
 export default function DashboardScreen() {
   const router = useRouter();
+  const setPendingAnalysisScanId = useScanStore(
+    (s) => s.setPendingAnalysisScanId,
+  );
   const { user, token, updateUser } = useAuthStore();
   const [recentScans, setRecentScans] = useState<RecentScanItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -125,12 +101,9 @@ export default function DashboardScreen() {
     <SafeAreaView className="flex-1 bg-[#EEF3EC]">
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* 🔹 HEADER */}
-        <View className="flex-row justify-between items-center px-5 py-4">
+        <View className="flex-row items-center justify-between px-5 py-4">
           <Text className="text-xl font-bold text-green-700">NutriScan</Text>
-
-          <TouchableOpacity className="bg-green-100 p-3 rounded-full">
-            <Ionicons name="notifications-outline" size={20} color="#166534" />
-          </TouchableOpacity>
+          <View className="w-11" />
         </View>
 
         {/* 🔹 GREETING */}
@@ -236,7 +209,7 @@ export default function DashboardScreen() {
               lower your score; better products raise it.
             </Text>
           ) : (
-            recentScans.map((item) => (
+            recentScans.slice(0, 3).map((item) => (
               <ScanItem
                 key={item.id}
                 title={item.title}
@@ -245,6 +218,10 @@ export default function DashboardScreen() {
                 status={item.status}
                 image={item.image?.trim() ? item.image : PLACEHOLDER_IMAGE}
                 statusColor={scanRecommendationColor(item.status)}
+                onPress={() => {
+                  setPendingAnalysisScanId(item.id);
+                  router.push("/(tabs)/analysis");
+                }}
               />
             ))
           )}
@@ -263,6 +240,7 @@ function ScanItem({
   status,
   image,
   statusColor,
+  onPress,
 }: {
   title: string;
   time: string;
@@ -270,6 +248,7 @@ function ScanItem({
   status: string;
   image: string;
   statusColor: "green" | "yellow" | "red";
+  onPress: () => void;
 }) {
   const palette =
     statusColor === "green"
@@ -279,7 +258,11 @@ function ScanItem({
         : { wrap: "bg-yellow-100", text: "text-yellow-700" };
 
   return (
-    <View className="bg-white p-4 rounded-2xl flex-row items-center justify-between shadow-sm">
+    <TouchableOpacity
+      onPress={onPress}
+      activeOpacity={0.85}
+      className="bg-white p-4 rounded-2xl flex-row items-center justify-between shadow-sm"
+    >
       <View className="flex-row items-center gap-3">
         <Image source={{ uri: image }} className="w-12 h-12 rounded-full" />
 
@@ -300,6 +283,6 @@ function ScanItem({
           {score}
         </Text>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 }

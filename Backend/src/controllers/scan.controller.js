@@ -105,7 +105,44 @@ exports.scanBarcode = async (req, res, next) => {
       console.error("Health profile refresh failed:", e);
     }
 
-    res.json({ scan, analysis: result });
+    res.json({
+      scan,
+      product: result.product || {},
+      analysis: result.analysis || {},
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getLatestScan = async (req, res, next) => {
+  try {
+    const scan = await Scan.findOne({ user: req.user._id })
+      .sort({ createdAt: -1 })
+      .lean();
+    if (!scan) {
+      return res.status(404).json({ message: "No scans yet" });
+    }
+    res.json(scan);
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getScanById = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "Invalid scan id" });
+    }
+    const scan = await Scan.findOne({
+      _id: id,
+      user: req.user._id,
+    }).lean();
+    if (!scan) {
+      return res.status(404).json({ message: "Scan not found" });
+    }
+    res.json(scan);
   } catch (err) {
     next(err);
   }

@@ -1,5 +1,20 @@
 const User = require("../models/User");
 const crypto = require("crypto");
+
+function buildPublicUser(user) {
+  const u = user.toObject ? user.toObject() : { ...user };
+  return {
+    id: String(u._id),
+    name: u.name,
+    email: u.email,
+    avatar: u.avatar || null,
+    age: u.age ?? null,
+    allergies: u.allergies || [],
+    diet: u.diet || null,
+    createdAt: u.createdAt || null,
+    healthProfile: u.healthProfile,
+  };
+}
 const hashPassword = require("../utils/hashPassword");
 const comparePassword = require("../utils/comparePassword");
 const generateToken = require("../utils/generateToken");
@@ -300,15 +315,7 @@ exports.signup = async (req, res, next) => {
     // ✅ Return BOTH user and token
     res.status(201).json({
       token,
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        avatar: user.avatar || null,
-        allergies: user.allergies || [],
-        diet: user.diet || null,
-        healthProfile: user.healthProfile,
-      },
+      user: buildPublicUser(user),
     });
   } catch (err) {
     next(err);
@@ -334,15 +341,7 @@ exports.login = async (req, res, next) => {
     // ✅ Return BOTH user and token
     res.status(200).json({
       token,
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        avatar: user.avatar || null,
-        allergies: user.allergies || [],
-        diet: user.diet || null,
-        healthProfile: user.healthProfile,
-      },
+      user: buildPublicUser(user),
     });
   } catch (err) {
     next(err);
