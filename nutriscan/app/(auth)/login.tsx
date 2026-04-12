@@ -111,7 +111,7 @@ export default function LoginScreen() {
               <Feather name="lock" size={18} color="#6B7280" />
 
               <TextInput
-                placeholder="••••••••"
+                placeholder="Enter password"
                 secureTextEntry={secure}
                 value={password}
                 onChangeText={setPassword}
