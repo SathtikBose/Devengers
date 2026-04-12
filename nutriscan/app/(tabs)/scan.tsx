@@ -6,6 +6,7 @@ import * as ImagePicker from "expo-image-picker";
 import * as ImageManipulator from "expo-image-manipulator";
 import { useState } from "react";
 import { useScan } from "../../src/hooks/useScan";
+import { useLoadingStore } from "../../src/store/useLoadingStore";
 import { useToast } from "../../src/hooks/useToast";
 
 /**
@@ -18,6 +19,7 @@ export default function ScanScreen() {
   const router = useRouter();
   const { scanFromImage, scanFromBarcode } = useScan();
   const toast = useToast();
+  const loadingStore = useLoadingStore();
 
   const [barcode, setBarcode] = useState("");
 
@@ -58,15 +60,19 @@ export default function ScanScreen() {
         });
       }
 
-      const res = await scanFromImage(base64);
-
-      if (res.success) {
-        router.push("/(tabs)/analysis");
-      } else {
-        toast.error({
-          title: "Scan failed",
-          message: res.message || "We could not scan that image.",
-        });
+      loadingStore.show("Processing image...");
+      try {
+        const res = await scanFromImage(base64);
+        if (res.success) {
+          router.push("/(tabs)/analysis");
+        } else {
+          toast.error({
+            title: "Scan failed",
+            message: res.message || "We could not scan that image.",
+          });
+        }
+      } finally {
+        loadingStore.hide();
       }
     }
   };
@@ -90,15 +96,19 @@ export default function ScanScreen() {
         });
       }
 
-      const res = await scanFromImage(base64);
-
-      if (res.success) {
-        router.push("/(tabs)/analysis");
-      } else {
-        toast.error({
-          title: "Scan failed",
-          message: res.message || "We could not scan that image.",
-        });
+      loadingStore.show("Processing image...");
+      try {
+        const res = await scanFromImage(base64);
+        if (res.success) {
+          router.push("/(tabs)/analysis");
+        } else {
+          toast.error({
+            title: "Scan failed",
+            message: res.message || "We could not scan that image.",
+          });
+        }
+      } finally {
+        loadingStore.hide();
       }
     }
   };

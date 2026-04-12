@@ -1,4 +1,4 @@
-import { useCallback, useState, type ComponentProps } from "react";
+import { useCallback, useState, useRef, type ComponentProps } from "react";
 import {
   View,
   Text,
@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons, Feather } from "@expo/vector-icons";
+import { Loader } from "../../src/components/Loader";
 import { useRouter } from "expo-router";
 import { useFocusEffect } from "@react-navigation/native";
 import { useAuthStore } from "../../src/store/useAuthStore";
@@ -77,6 +78,7 @@ export default function ProfileScreen() {
     router.replace("/(auth)/login");
   };
 
+  const [imageLoading, setImageLoading] = useState(true);
   const avatarUri =
     user?.avatar && String(user.avatar).trim() !== ""
       ? String(user.avatar)
@@ -95,10 +97,32 @@ export default function ProfileScreen() {
         </View>
 
         <View className="mx-5 bg-white rounded-3xl p-6 items-center">
-          <Image
-            source={{ uri: avatarUri }}
-            className="w-24 h-24 rounded-full bg-gray-100"
-          />
+          <View style={{ position: "relative" }}>
+            <Image
+              source={{ uri: avatarUri }}
+              className="w-24 h-24 rounded-full bg-gray-100"
+              onLoadStart={() => setImageLoading(true)}
+              onLoadEnd={() => setImageLoading(false)}
+            />
+            {imageLoading && (
+              <View
+                style={{
+                  position: "absolute",
+                  left: 0,
+                  top: 0,
+                  width: 96,
+                  height: 96,
+                  borderRadius: 48,
+                  backgroundColor: "rgba(255,255,255,0.7)",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  zIndex: 10,
+                }}
+              >
+                <ActivityIndicator size="small" color="#166534" />
+              </View>
+            )}
+          </View>
 
           <Text className="text-xl font-bold mt-4 text-gray-800">
             {user?.name || "Guest"}
@@ -178,11 +202,7 @@ export default function ProfileScreen() {
             DAILY QUOTE
           </Text>
           {quoteLoading ? (
-            <ActivityIndicator
-              className="mt-3"
-              color="#bbf7d0"
-              size="small"
-            />
+            <ActivityIndicator className="mt-3" color="#bbf7d0" size="small" />
           ) : (
             <>
               <Text className="text-white text-base mt-2 leading-6">
@@ -190,7 +210,9 @@ export default function ProfileScreen() {
                   "Nourish yourself today—your future self will thank you."}
               </Text>
               {quote?.author ? (
-                <Text className="text-green-200 text-xs mt-3">— {quote.author}</Text>
+                <Text className="text-green-200 text-xs mt-3">
+                  — {quote.author}
+                </Text>
               ) : null}
             </>
           )}

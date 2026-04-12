@@ -10,6 +10,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useCallback, useState } from "react";
+import { useToast } from "../../src/hooks/useToast";
 import { useRouter } from "expo-router";
 import { useFocusEffect } from "@react-navigation/native";
 import { fetchScanHistoryApi, type ScanDocument } from "../../src/api/scan.api";
@@ -51,6 +52,7 @@ export default function HistoryScreen() {
   const setPendingAnalysisScanId = useScanStore(
     (s) => s.setPendingAnalysisScanId,
   );
+  const toast = useToast();
 
   const [activeFilter, setActiveFilter] = useState<
     "Today" | "This Week" | "All"
@@ -65,12 +67,18 @@ export default function HistoryScreen() {
     try {
       const scans = await fetchScanHistoryApi();
       setRows(scans.map(mapScanToRow));
-    } catch {
+    } catch (e: any) {
       setRows([]);
+      if (e?.response?.status !== 404) {
+        toast.error({
+          title: "Failed to load history",
+          message: "An error occurred while fetching your scan history.",
+        });
+      }
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [toast]);
 
   useFocusEffect(
     useCallback(() => {
@@ -269,10 +277,7 @@ function ScanCard({
       className="bg-white p-4 rounded-2xl flex-row items-center justify-between active:opacity-90"
     >
       <View className="flex-row items-center gap-3 flex-1">
-        <Image
-          source={{ uri: item.image }}
-          className="w-14 h-14 rounded-xl"
-        />
+        <Image source={{ uri: item.image }} className="w-14 h-14 rounded-xl" />
 
         <View className="flex-1">
           <Text className="font-semibold text-gray-800">{item.name}</Text>

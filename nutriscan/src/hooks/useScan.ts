@@ -27,12 +27,6 @@ export const useScan = () => {
 
       return { success: true };
     } catch (error: any) {
-      console.error("❌ Scan error:", {
-        message: error?.message,
-        code: error?.code,
-        status: error?.response?.status,
-        response: error?.response?.data,
-      });
       return {
         success: false,
         message:
@@ -69,12 +63,6 @@ export const useScan = () => {
 
       return { success: true };
     } catch (error: any) {
-      console.error("❌ Barcode scan error:", {
-        message: error?.message,
-        code: error?.code,
-        status: error?.response?.status,
-        response: error?.response?.data,
-      });
       return {
         success: false,
         message:

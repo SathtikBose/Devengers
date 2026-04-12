@@ -11,20 +11,15 @@ import { mockLogin } from "./mock";
  * 🔹 Login API
  */
 export const loginApi = async (data: { email: string; password: string }) => {
-  console.log("📝 Login attempt:", { email: data.email, mock: ENV.USE_MOCK });
-
   try {
     if (ENV.USE_MOCK) {
       const mockData = await mockLogin();
-      console.log("✅ Mock login successful:", mockData);
       return mockData;
     }
 
     const response = await apiClient.post("/auth/login", data);
-    console.log("✅ Real API login successful:", response.data);
     return response.data;
   } catch (error: any) {
-    console.error("❌ Login API error:", error);
     throw error;
   }
 };

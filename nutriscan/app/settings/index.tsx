@@ -59,7 +59,7 @@ const DIET_OPTIONS = [
 export default function SettingsScreen() {
   const router = useRouter();
   const { user, updateUser, token } = useAuthStore();
-  const { isDarkMode, toggleDarkMode } = useAppStore();
+  // const { isDarkMode, toggleDarkMode } = useAppStore();
   const { uploadAvatar } = useAuth();
   const toast = useToast();
 
@@ -333,7 +333,9 @@ export default function SettingsScreen() {
               <Ionicons name="camera" size={16} color="white" />
             </View>
           </TouchableOpacity>
-          <Text className="text-gray-500 text-xs mt-3">Tap photo to change</Text>
+          <Text className="text-gray-500 text-xs mt-3">
+            Tap photo to change
+          </Text>
         </View>
 
         {/* Name & age */}
@@ -377,7 +379,11 @@ export default function SettingsScreen() {
                     {savingName ? (
                       <ActivityIndicator size="small" color="#166534" />
                     ) : (
-                      <Ionicons name="checkmark-circle" size={26} color="#166534" />
+                      <Ionicons
+                        name="checkmark-circle"
+                        size={26}
+                        color="#166534"
+                      />
                     )}
                   </TouchableOpacity>
                 </View>
@@ -414,9 +420,7 @@ export default function SettingsScreen() {
               {!editingAge ? (
                 <TouchableOpacity
                   onPress={() => {
-                    setAgeDraft(
-                      user?.age != null ? String(user.age) : "",
-                    );
+                    setAgeDraft(user?.age != null ? String(user.age) : "");
                     setEditingAge(true);
                   }}
                   hitSlop={8}
@@ -429,9 +433,7 @@ export default function SettingsScreen() {
                   <TouchableOpacity
                     onPress={() => {
                       setEditingAge(false);
-                      setAgeDraft(
-                        user?.age != null ? String(user.age) : "",
-                      );
+                      setAgeDraft(user?.age != null ? String(user.age) : "");
                       Keyboard.dismiss();
                     }}
                     hitSlop={8}
@@ -447,7 +449,11 @@ export default function SettingsScreen() {
                     {savingAge ? (
                       <ActivityIndicator size="small" color="#166534" />
                     ) : (
-                      <Ionicons name="checkmark-circle" size={26} color="#166534" />
+                      <Ionicons
+                        name="checkmark-circle"
+                        size={26}
+                        color="#166534"
+                      />
                     )}
                   </TouchableOpacity>
                 </View>
@@ -514,7 +520,11 @@ export default function SettingsScreen() {
                   {busy ? (
                     <ActivityIndicator size="small" color="#166534" />
                   ) : selected ? (
-                    <Ionicons name="checkmark-circle" size={24} color="#166534" />
+                    <Ionicons
+                      name="checkmark-circle"
+                      size={24}
+                      color="#166534"
+                    />
                   ) : (
                     <View className="w-6 h-6 rounded-full border-2 border-gray-300" />
                   )}
@@ -553,7 +563,9 @@ export default function SettingsScreen() {
                 </View>
               ))
             ) : (
-              <Text className="text-gray-400 text-sm">No allergies listed yet.</Text>
+              <Text className="text-gray-400 text-sm">
+                No allergies listed yet.
+              </Text>
             )}
           </View>
 
@@ -578,17 +590,6 @@ export default function SettingsScreen() {
               <Text className="text-white font-semibold">Add</Text>
             </TouchableOpacity>
           </View>
-        </View>
-
-        {/* App */}
-        <View className="mx-5 mt-6 bg-white rounded-3xl p-5 flex-row justify-between items-center">
-          <View>
-            <Text className="text-gray-900 font-medium">Dark mode</Text>
-            <Text className="text-gray-500 text-xs mt-0.5">
-              Applies in supported screens.
-            </Text>
-          </View>
-          <Switch value={isDarkMode} onValueChange={toggleDarkMode} />
         </View>
 
         <View className="mx-5 mt-6 bg-white rounded-3xl p-4">

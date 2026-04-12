@@ -30,18 +30,21 @@ export const useAuth = () => {
       const data = await loginApi({ email, password });
 
       if (!data || !data.user || !data.token) {
-        console.error("❌ Login API returned invalid data:", data);
+        // console.error("❌ Login API returned invalid data:", data);
         return {
           success: false,
           message: "Invalid login response from server",
         };
       }
 
-      login(mapApiUserToClient(data.user as Record<string, unknown>), data.token);
+      login(
+        mapApiUserToClient(data.user as Record<string, unknown>),
+        data.token,
+      );
 
       return { success: true };
     } catch (error: any) {
-      console.error("❌ Login error:", error);
+      // console.error("❌ Login error:", error);
       return {
         success: false,
         message:
@@ -66,18 +69,21 @@ export const useAuth = () => {
       const data = await signupApi({ name, email, password });
 
       if (!data || !data.user || !data.token) {
-        console.error("❌ Signup API returned invalid data:", data);
+        // console.error("❌ Signup API returned invalid data:", data);
         return {
           success: false,
           message: "Invalid signup response from server",
         };
       }
 
-      login(mapApiUserToClient(data.user as Record<string, unknown>), data.token);
+      login(
+        mapApiUserToClient(data.user as Record<string, unknown>),
+        data.token,
+      );
 
       return { success: true };
     } catch (error: any) {
-      console.error("❌ Signup error:", error);
+      // console.error("❌ Signup error:", error);
       return {
         success: false,
         message:
@@ -183,8 +189,7 @@ export const useAuth = () => {
     } catch (error: any) {
       return {
         success: false,
-        message:
-          error?.response?.data?.message || "Failed to verify code",
+        message: error?.response?.data?.message || "Failed to verify code",
       };
     } finally {
       setLoading(false);
@@ -211,8 +216,7 @@ export const useAuth = () => {
     } catch (error: any) {
       return {
         success: false,
-        message:
-          error?.response?.data?.message || "Failed to reset password",
+        message: error?.response?.data?.message || "Failed to reset password",
       };
     } finally {
       setLoading(false);

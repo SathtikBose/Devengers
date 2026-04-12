@@ -1,6 +1,8 @@
 import { Stack } from "expo-router";
 import { View } from "react-native";
 import { ToastHost } from "../src/components/ToastHost";
+import { ErrorBoundary } from "../src/components/ErrorBoundary";
+import { GlobalLoader } from "../src/components/GlobalLoader";
 import "@/global.css";
 
 /**
@@ -9,9 +11,12 @@ import "@/global.css";
  */
 export default function RootLayout() {
   return (
-    <View className="flex-1">
-      <Stack screenOptions={{ headerShown: false }} />
-      <ToastHost />
-    </View>
+    <ErrorBoundary>
+      <View className="flex-1">
+        <Stack screenOptions={{ headerShown: false }} />
+        <ToastHost />
+        <GlobalLoader />
+      </View>
+    </ErrorBoundary>
   );
 }

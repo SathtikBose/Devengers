@@ -1,5 +1,4 @@
 const express = require("express");
-const morgan = require("morgan");
 const cors = require("cors");
 const dotenv = require("dotenv");
 const errorHandler = require("./middleware/error.middleware");
@@ -15,7 +14,6 @@ app.use(
 );
 app.use(express.json({ limit: "25mb" }));
 app.use(express.urlencoded({ extended: true }));
-app.use(morgan("dev"));
 
 app.use("/health-check", (req, res) => {
   res.send("working");

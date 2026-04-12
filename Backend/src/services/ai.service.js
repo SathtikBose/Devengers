@@ -48,7 +48,9 @@ function extractJsonFromText(text) {
 
 function buildGeminiError(error) {
   const apiMessage =
-    error.response?.data?.error?.message || error.message || "AI analysis failed";
+    error.response?.data?.error?.message ||
+    error.message ||
+    "AI analysis failed";
   const statusCode = error.response?.status;
   const wrappedError = new Error(apiMessage);
 
@@ -98,7 +100,6 @@ async function callGeminiAPI(apiKey, contents) {
 
     return extractJsonFromText(text);
   } catch (error) {
-    console.error("Gemini API Error:", error.response?.data || error.message);
     throw buildGeminiError(error);
   }
 }
@@ -144,7 +145,9 @@ Only output valid JSON, nothing else.`;
   let userContext = "";
   if (user) {
     const diet = user.diet ? `Diet: ${user.diet}. ` : "";
-    const allergies = user.allergies?.length ? `Allergies: ${user.allergies.join(", ")}. ` : "";
+    const allergies = user.allergies?.length
+      ? `Allergies: ${user.allergies.join(", ")}. `
+      : "";
     if (diet || allergies) {
       userContext = `\nPlease consider the user's specific dietary preferences: ${diet}${allergies} Tailor the recommendation, safeIngredients, avoidIngredients, and alternatives taking these preferences into account.`;
     }
@@ -178,7 +181,9 @@ exports.analyzeBarcode = async (barcode, user = null) => {
 
   if (user) {
     const diet = user.diet ? `Diet: ${user.diet}. ` : "";
-    const allergies = user.allergies?.length ? `Allergies: ${user.allergies.join(", ")}. ` : "";
+    const allergies = user.allergies?.length
+      ? `Allergies: ${user.allergies.join(", ")}. `
+      : "";
     if (diet || allergies) {
       prompt += `\nPlease consider the user's specific dietary preferences: ${diet}${allergies} Tailor the recommendation, safeIngredients, avoidIngredients, and alternatives taking these preferences into account.`;
     }

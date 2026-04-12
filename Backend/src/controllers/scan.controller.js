@@ -1,7 +1,9 @@
 const Scan = require("../models/Scan");
 const ProductCache = require("../models/ProductCache");
 const aiService = require("../services/ai.service");
-const { refreshUserHealthProfile } = require("../services/health-score.service");
+const {
+  refreshUserHealthProfile,
+} = require("../services/health-score.service");
 const cloudinary = require("../config/cloudinary");
 const mongoose = require("mongoose");
 const { Readable } = require("stream");
@@ -51,10 +53,8 @@ exports.scanImage = async (req, res, next) => {
     let result;
 
     if (cached) {
-      console.log("✅ Cache hit!");
       result = cached.result;
     } else {
-      console.log("🤖 Calling Gemini AI...");
       result = await aiService.analyzeImage(cloudinaryUrl, req.user);
       await ProductCache.create({ key, result });
     }
@@ -68,9 +68,7 @@ exports.scanImage = async (req, res, next) => {
 
     try {
       await refreshUserHealthProfile(req.user._id);
-    } catch (e) {
-      console.error("Health profile refresh failed:", e);
-    }
+    } catch (e) {}
 
     res.json({
       scan,
@@ -79,7 +77,6 @@ exports.scanImage = async (req, res, next) => {
       analysis: result.analysis,
     });
   } catch (err) {
-    console.error("❌ Scan error:", err);
     next(err);
   }
 };
@@ -109,9 +106,7 @@ exports.scanBarcode = async (req, res, next) => {
 
     try {
       await refreshUserHealthProfile(req.user._id);
-    } catch (e) {
-      console.error("Health profile refresh failed:", e);
-    }
+    } catch (e) {}
 
     res.json({
       scan,
