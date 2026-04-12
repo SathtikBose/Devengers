@@ -103,7 +103,7 @@ async function callGeminiAPI(apiKey, contents) {
   }
 }
 
-exports.analyzeImage = async (imageUrl) => {
+exports.analyzeImage = async (imageUrl, user = null) => {
   const apiKey = getApiKey();
   const imageResp = await axios.get(imageUrl, {
     responseType: "arraybuffer",
@@ -141,11 +141,20 @@ exports.analyzeImage = async (imageUrl) => {
 }
 Only output valid JSON, nothing else.`;
 
+  let userContext = "";
+  if (user) {
+    const diet = user.diet ? `Diet: ${user.diet}. ` : "";
+    const allergies = user.allergies?.length ? `Allergies: ${user.allergies.join(", ")}. ` : "";
+    if (diet || allergies) {
+      userContext = `\nPlease consider the user's specific dietary preferences: ${diet}${allergies} Tailor the recommendation, safeIngredients, avoidIngredients, and alternatives taking these preferences into account.`;
+    }
+  }
+
   const contents = [
     {
       role: "user",
       parts: [
-        { text: prompt },
+        { text: prompt + userContext },
         {
           inlineData: {
             mimeType: contentType,
@@ -159,13 +168,21 @@ Only output valid JSON, nothing else.`;
   return callGeminiAPI(apiKey, contents);
 };
 
-exports.analyzeBarcode = async (barcode) => {
+exports.analyzeBarcode = async (barcode, user = null) => {
   const apiKey = getApiKey();
-  const prompt =
+  let prompt =
     `Analyze this food product barcode: ${barcode}. ` +
     `Return a JSON object with: product {name, subtitle, image}, ` +
     `analysis {grade, recommendation, score, rating, ingredients, safeIngredients, avoidIngredients, alternatives}. ` +
     `Only output valid JSON.`;
+
+  if (user) {
+    const diet = user.diet ? `Diet: ${user.diet}. ` : "";
+    const allergies = user.allergies?.length ? `Allergies: ${user.allergies.join(", ")}. ` : "";
+    if (diet || allergies) {
+      prompt += `\nPlease consider the user's specific dietary preferences: ${diet}${allergies} Tailor the recommendation, safeIngredients, avoidIngredients, and alternatives taking these preferences into account.`;
+    }
+  }
 
   const contents = [
     {

@@ -38,10 +38,14 @@ exports.scanImage = async (req, res, next) => {
     });
 
     // ✅ Cache check using hash of CLEAN base64
-    const key = require("crypto")
+    const baseKey = require("crypto")
       .createHash("sha256")
       .update(cleanBase64)
       .digest("hex");
+
+    const userDiet = req.user.diet || "none";
+    const userAllergies = (req.user.allergies || []).join(",") || "none";
+    const key = `${baseKey}_${userDiet}_${userAllergies}`;
 
     let cached = await ProductCache.findOne({ key });
     let result;
@@ -51,7 +55,7 @@ exports.scanImage = async (req, res, next) => {
       result = cached.result;
     } else {
       console.log("🤖 Calling Gemini AI...");
-      result = await aiService.analyzeImage(cloudinaryUrl);
+      result = await aiService.analyzeImage(cloudinaryUrl, req.user);
       await ProductCache.create({ key, result });
     }
 
@@ -84,13 +88,17 @@ exports.scanBarcode = async (req, res, next) => {
     const { barcode } = req.body;
     if (!barcode)
       return res.status(400).json({ message: "Barcode is required" });
-    let cached = await ProductCache.findOne({ key: barcode });
+    const userDiet = req.user.diet || "none";
+    const userAllergies = (req.user.allergies || []).join(",") || "none";
+    const key = `${barcode}_${userDiet}_${userAllergies}`;
+
+    let cached = await ProductCache.findOne({ key });
     let result;
     if (cached) {
       result = cached.result;
     } else {
-      result = await aiService.analyzeBarcode(barcode);
-      await ProductCache.create({ key: barcode, result });
+      result = await aiService.analyzeBarcode(barcode, req.user);
+      await ProductCache.create({ key, result });
     }
     const scan = await Scan.create({
       user: req.user._id,

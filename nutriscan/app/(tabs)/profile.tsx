@@ -153,9 +153,6 @@ export default function ProfileScreen() {
             <Text className="font-semibold text-green-900">
               {user?.diet?.trim() ? user.diet : "Not set"}
             </Text>
-            <Text className="text-gray-500 text-xs mt-1">
-              Edit in Settings to sync with your account.
-            </Text>
           </View>
 
           <View className="border-t border-gray-100 mt-5 pt-2">

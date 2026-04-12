@@ -100,10 +100,6 @@ export default function HistoryScreen() {
       <ScrollView showsVerticalScrollIndicator={false}>
         <View className="flex-row items-center justify-between px-5 py-4">
           <Text className="text-xl font-bold text-green-700">Scan History</Text>
-
-          <View className="w-10 h-10 bg-gray-300 rounded-full items-center justify-center">
-            <Text>👤</Text>
-          </View>
         </View>
 
         <View className="mx-5 bg-[#E6EFE4] rounded-full px-4 py-3 flex-row items-center">

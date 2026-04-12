@@ -30,6 +30,11 @@ const AVATAR_FALLBACK =
 /** Must match backend `diet` string values. */
 const DIET_OPTIONS = [
   {
+    key: "Balanced",
+    label: "Normal / Balanced",
+    line: "A standard, balanced diet with no specific restrictions.",
+  },
+  {
     key: "Vegetarian",
     label: "Vegetarian",
     line: "No meat or fish; eggs and dairy are still on the menu.",
@@ -43,6 +48,11 @@ const DIET_OPTIONS = [
     key: "Keto",
     label: "Keto",
     line: "Very low carbs and higher fat so your body can run on ketones.",
+  },
+  {
+    key: "Pescatarian",
+    label: "Pescatarian",
+    line: "Vegetarian diet that includes fish and other seafood.",
   },
 ] as const;
 
