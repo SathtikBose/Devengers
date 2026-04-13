@@ -274,12 +274,6 @@ function ScanItem({
       </View>
 
       <View className="items-end">
-        <View className={`px-3 py-1 rounded-full ${palette.wrap}`}>
-          <Text className={`text-xs font-semibold ${palette.text}`}>
-            {status}
-          </Text>
-        </View>
-
         <Text className="text-gray-800 font-semibold mt-1 text-sm">
           {score}
         </Text>
