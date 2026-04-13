@@ -91,7 +91,8 @@ export default function DashboardScreen() {
   const hp = user?.healthProfile;
   const healthScore = hp?.score ?? 70;
   const healthStatus = hp?.status ?? "BALANCED";
-  const insight = hp?.insight ?? "Start scanning products to build your health profile.";
+  const insight =
+    hp?.insight ?? "Start scanning products to build your health profile.";
   const badge = healthStatusBadgeClasses(healthStatus);
   const barTint = scoreBarColorClass(healthScore);
   const insightSkin = insightSurfaceClasses(healthScore);
@@ -205,11 +206,11 @@ export default function DashboardScreen() {
             </View>
           ) : recentScans.length === 0 ? (
             <Text className="text-gray-500 text-center py-6 px-2">
-              No scans yet. Each scan is treated as a food choice—harmful products
-              lower your score; better products raise it.
+              No scans yet. Each scan is treated as a food choice—harmful
+              products lower your score; better products raise it.
             </Text>
           ) : (
-            recentScans.slice(0, 3).map((item) => (
+            recentScans.slice(0, 4).map((item) => (
               <ScanItem
                 key={item.id}
                 title={item.title}
@@ -273,12 +274,6 @@ function ScanItem({
       </View>
 
       <View className="items-end">
-        <View className={`px-3 py-1 rounded-full ${palette.wrap}`}>
-          <Text className={`text-xs font-semibold ${palette.text}`}>
-            {status}
-          </Text>
-        </View>
-
         <Text className="text-gray-800 font-semibold mt-1 text-sm">
           {score}
         </Text>
