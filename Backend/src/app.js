@@ -50,7 +50,7 @@ app.use(mongoSanitize());
 
 app.use(hpp());
 
-app.use("/", (req, res) => {
+app.use("/health", (req, res) => {
   res.send("working");
 });
 

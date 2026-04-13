@@ -74,7 +74,7 @@ export default function DashboardScreen() {
     try {
       const data = await fetchHealthDashboardApi();
       updateUser({ healthProfile: data.healthProfile });
-      setRecentScans(data.recentScans);
+      setRecentScans(data.recentScans ?? []);
     } catch {
       // Keep existing cached healthProfile; avoid logout loops on network errors
     } finally {
@@ -210,7 +210,7 @@ export default function DashboardScreen() {
               products lower your score; better products raise it.
             </Text>
           ) : (
-            recentScans.slice(0, 4).map((item) => (
+            recentScans.slice(0, 3).map((item) => (
               <ScanItem
                 key={item.id}
                 title={item.title}
@@ -274,6 +274,12 @@ function ScanItem({
       </View>
 
       <View className="items-end">
+        <View className={`px-3 py-1 rounded-full ${palette.wrap}`}>
+          <Text className={`text-xs font-semibold ${palette.text}`}>
+            {status}
+          </Text>
+        </View>
+
         <Text className="text-gray-800 font-semibold mt-1 text-sm">
           {score}
         </Text>
