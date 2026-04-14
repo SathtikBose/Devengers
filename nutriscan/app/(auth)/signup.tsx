@@ -123,7 +123,7 @@ export default function SignupScreen() {
             <View className="bg-[#E6EFE4] rounded-full px-4 py-3 flex-row items-center">
               <Feather name="mail" size={18} color="#6B7280" />
               <TextInput
-                placeholder="julian@livinglab.health"
+                placeholder="Enter email"
                 value={email}
                 onChangeText={setEmail}
                 className="ml-3 flex-1 text-gray-800"
@@ -139,7 +139,7 @@ export default function SignupScreen() {
             <View className="bg-[#E6EFE4] rounded-full px-4 py-3 flex-row items-center">
               <Feather name="lock" size={18} color="#6B7280" />
               <TextInput
-                placeholder="••••••••"
+                placeholder="Enter password"
                 secureTextEntry={secure1}
                 value={password}
                 onChangeText={setPassword}
@@ -163,7 +163,7 @@ export default function SignupScreen() {
             <View className="bg-[#E6EFE4] rounded-full px-4 py-3 flex-row items-center">
               <Feather name="shield" size={18} color="#6B7280" />
               <TextInput
-                placeholder="••••••••"
+                placeholder="Enter password"
                 secureTextEntry={secure2}
                 value={confirmPassword}
                 onChangeText={setConfirmPassword}

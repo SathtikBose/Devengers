@@ -217,7 +217,7 @@ export default function ForgotPasswordScreen() {
               <View className="bg-[#E6EFE4] rounded-xl px-4 py-3 flex-row items-center mb-4">
                 <Feather name="mail" size={18} color="#6B7280" />
                 <TextInput
-                  placeholder="name@example.com"
+                  placeholder="Enter email"
                   value={email}
                   onChangeText={setEmail}
                   className="ml-3 flex-1 text-gray-800"

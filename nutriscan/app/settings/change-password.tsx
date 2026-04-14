@@ -107,15 +107,30 @@ export default function ChangePasswordScreen() {
           <View className="bg-white rounded-3xl p-5">
             {/* CURRENT PASSWORD */}
             <Label text="CURRENT PASSWORD" />
-            <Input value={current} onChangeText={setCurrent} secure />
+            <Input
+              placeholder="Enter current password"
+              value={current}
+              onChangeText={setCurrent}
+              secure
+            />
 
             {/* NEW PASSWORD */}
             <Label text="NEW PASSWORD" />
-            <Input value={newPass} onChangeText={setNewPass} secure />
+            <Input
+              value={newPass}
+              onChangeText={setNewPass}
+              secure
+              placeholder="Enter new password"
+            />
 
             {/* CONFIRM */}
             <Label text="CONFIRM NEW PASSWORD" />
-            <Input value={confirm} onChangeText={setConfirm} secure />
+            <Input
+              value={confirm}
+              onChangeText={setConfirm}
+              secure
+              placeholder="Enter new confirm password"
+            />
           </View>
 
           {/* 🔹 Info */}
