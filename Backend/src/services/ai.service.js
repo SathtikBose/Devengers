@@ -1,118 +1,94 @@
 const axios = require("axios");
 
 function getApiKey() {
-  const apiKey = process.env.GEMINI_API_KEY || process.env.AI_API_KEY;
-
+  const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey) {
     const error = new Error(
-      "Missing Gemini API key. Set GEMINI_API_KEY or AI_API_KEY in backend/.env.",
+      "Missing Groq API key. Set GROQ_API_KEY in backend/.env.",
     );
     error.status = 500;
     throw error;
   }
-
   return apiKey;
 }
 
-function getGeminiModel() {
-  return process.env.GEMINI_MODEL || "gemini-2.5-flash";
-}
+const GROQ_MODEL = "meta-llama/llama-4-scout-17b-16e-instruct";
+const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
 
-function getGeminiUrl() {
-  return (
-    process.env.GEMINI_API_URL ||
-    process.env.GEMINI_VISION_URL ||
-    `https://generativelanguage.googleapis.com/v1beta/models/${getGeminiModel()}:generateContent`
-  );
-}
+// ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function extractJsonFromText(text) {
-  if (!text) {
-    throw new Error("Empty response from Gemini");
-  }
+  if (!text) throw new Error("Empty response from Groq");
 
   const cleanedText = text.replace(/```json|```/gi, "").trim();
 
   try {
     return JSON.parse(cleanedText);
-  } catch (parseError) {
+  } catch {
     const jsonMatch = cleanedText.match(/\{[\s\S]*\}/);
-
-    if (!jsonMatch) {
-      throw new Error("No JSON found in Gemini response");
-    }
-
+    if (!jsonMatch) throw new Error("No JSON found in Groq response");
     return JSON.parse(jsonMatch[0]);
   }
 }
 
-function buildGeminiError(error) {
+function buildGroqError(error) {
   const apiMessage =
     error.response?.data?.error?.message ||
     error.message ||
     "AI analysis failed";
   const statusCode = error.response?.status;
   const wrappedError = new Error(apiMessage);
-
   wrappedError.status = statusCode ? 502 : 500;
-
-  if (statusCode === 403 && /reported as leaked/i.test(apiMessage)) {
-    wrappedError.message =
-      "Gemini rejected the configured API key because it was reported as leaked. Create a new key in Google AI Studio and update backend/.env.";
-  }
-
-  if (statusCode === 404) {
-    wrappedError.message =
-      `Gemini model "${getGeminiModel()}" is unavailable for generateContent. ` +
-      "Use a supported model such as gemini-2.5-flash.";
-  }
-
   return wrappedError;
 }
 
-async function callGeminiAPI(apiKey, contents) {
+// ─── Core API call ───────────────────────────────────────────────────────────
+
+async function callGroqAPI(messages) {
+  const apiKey = getApiKey();
+
   try {
     const response = await axios.post(
-      getGeminiUrl(),
+      GROQ_URL,
       {
-        contents,
-        generationConfig: {
-          responseMimeType: "application/json",
-        },
+        model: GROQ_MODEL,
+        messages,
+        response_format: { type: "json_object" },
       },
       {
         headers: {
           "Content-Type": "application/json",
-          "x-goog-api-key": apiKey,
+          Authorization: `Bearer ${apiKey}`,
         },
       },
     );
 
-    const text = response.data?.candidates?.[0]?.content?.parts
-      ?.map((part) => part.text)
-      .filter(Boolean)
-      .join("\n")
-      .trim();
+    const text = response.data?.choices?.[0]?.message?.content?.trim();
 
-    if (!text) {
-      throw new Error("Empty or invalid response structure from Gemini");
-    }
+    if (!text) throw new Error("Empty or invalid response from Groq");
 
     return extractJsonFromText(text);
   } catch (error) {
-    throw buildGeminiError(error);
+    throw buildGroqError(error);
   }
 }
 
-exports.analyzeImage = async (imageUrl, user = null) => {
-  const apiKey = getApiKey();
-  const imageResp = await axios.get(imageUrl, {
-    responseType: "arraybuffer",
-  });
-  const base64Image = Buffer.from(imageResp.data).toString("base64");
-  const contentType = imageResp.headers["content-type"] || "image/jpeg";
+// ─── Prompt builder ──────────────────────────────────────────────────────────
 
-  const prompt = `Analyze this food product image. Return a JSON object with exactly this structure:
+function buildUserContext(user) {
+  if (!user) return "";
+  const diet = user.diet ? `Diet: ${user.diet}. ` : "";
+  const allergies = user.allergies?.length
+    ? `Allergies: ${user.allergies.join(", ")}. `
+    : "";
+  if (!diet && !allergies) return "";
+  return `\nConsider the user's dietary preferences: ${diet}${allergies} Tailor the recommendation, safeIngredients, avoidIngredients, and alternatives accordingly.`;
+}
+
+function buildFoodPrompt(imageUrl, user) {
+  const userContext = buildUserContext(user);
+
+  return `Analyze this food product image. Return a JSON object with exactly this structure:
 {
   "product": {
     "name": "product name",
@@ -122,7 +98,7 @@ exports.analyzeImage = async (imageUrl, user = null) => {
   "analysis": {
     "grade": "A",
     "recommendation": "SAFE",
-    "description": "brief description",
+    "description": "Write a detailed 8-10 line paragraph about this food product. Cover what the product is, its main purpose, key ingredients and what they do, nutritional highlights, who it is suitable for, any health benefits or concerns, how it fits into a balanced diet, and an overall honest summary for the consumer to make an informed decision.",
     "score": 85,
     "rating": "Excellent",
     "nutrition": {
@@ -140,61 +116,46 @@ exports.analyzeImage = async (imageUrl, user = null) => {
     ]
   }
 }
-Only output valid JSON, nothing else.`;
+Only output valid JSON, nothing else.${userContext}`;
+}
 
-  let userContext = "";
-  if (user) {
-    const diet = user.diet ? `Diet: ${user.diet}. ` : "";
-    const allergies = user.allergies?.length
-      ? `Allergies: ${user.allergies.join(", ")}. `
-      : "";
-    if (diet || allergies) {
-      userContext = `\nPlease consider the user's specific dietary preferences: ${diet}${allergies} Tailor the recommendation, safeIngredients, avoidIngredients, and alternatives taking these preferences into account.`;
-    }
-  }
+// ─── Exports ─────────────────────────────────────────────────────────────────
 
-  const contents = [
+exports.analyzeImage = async (imageUrl, user = null) => {
+  const messages = [
     {
       role: "user",
-      parts: [
-        { text: prompt + userContext },
+      content: [
         {
-          inlineData: {
-            mimeType: contentType,
-            data: base64Image,
-          },
+          type: "text",
+          text: buildFoodPrompt(imageUrl, user),
+        },
+        {
+          type: "image_url",
+          image_url: { url: imageUrl }, // Cloudinary URL sent directly — no base64 conversion needed
         },
       ],
     },
   ];
 
-  return callGeminiAPI(apiKey, contents);
+  return callGroqAPI(messages);
 };
 
 exports.analyzeBarcode = async (barcode, user = null) => {
-  const apiKey = getApiKey();
-  let prompt =
+  const userContext = buildUserContext(user);
+
+  const prompt =
     `Analyze this food product barcode: ${barcode}. ` +
     `Return a JSON object with: product {name, subtitle, image}, ` +
-    `analysis {grade, recommendation, score, rating, ingredients, safeIngredients, avoidIngredients, alternatives}. ` +
-    `Only output valid JSON.`;
+    `analysis {grade, recommendation, score, rating, description, nutrition, ingredients, safeIngredients, avoidIngredients, alternatives}. ` +
+    `Only output valid JSON.${userContext}`;
 
-  if (user) {
-    const diet = user.diet ? `Diet: ${user.diet}. ` : "";
-    const allergies = user.allergies?.length
-      ? `Allergies: ${user.allergies.join(", ")}. `
-      : "";
-    if (diet || allergies) {
-      prompt += `\nPlease consider the user's specific dietary preferences: ${diet}${allergies} Tailor the recommendation, safeIngredients, avoidIngredients, and alternatives taking these preferences into account.`;
-    }
-  }
-
-  const contents = [
+  const messages = [
     {
       role: "user",
-      parts: [{ text: prompt }],
+      content: prompt,
     },
   ];
 
-  return callGeminiAPI(apiKey, contents);
+  return callGroqAPI(messages);
 };

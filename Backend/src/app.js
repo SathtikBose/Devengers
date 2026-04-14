@@ -50,8 +50,8 @@ app.use(mongoSanitize());
 
 app.use(hpp());
 
-app.use("/health", (req, res) => {
-  res.send("working");
+app.get("/health", (req, res) => {
+  res.status(200).json({ status: "ok", uptime: process.uptime() });
 });
 
 app.use("/auth", authLimiter, require("./routes/auth.routes"));
