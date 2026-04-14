@@ -21,6 +21,6 @@ function startSelfPing() {
     () => {
       client.get(`${renderUrl}/health`, () => {}).on("error", () => {});
     },
-    10 * 60 * 1000,
+    2 * 60 * 1000,
   );
 }
