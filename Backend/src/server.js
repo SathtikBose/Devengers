@@ -8,19 +8,5 @@ const PORT = process.env.PORT || 5000;
 connectDB();
 
 app.listen(PORT, "0.0.0.0", () => {
-  startSelfPing();
+  console.log(`server started on port ${PORT}`);
 });
-
-function startSelfPing() {
-  const renderUrl = process.env.RENDER_URL;
-  if (!renderUrl) return;
-
-  const client = renderUrl.startsWith("https") ? https : http;
-
-  setInterval(
-    () => {
-      client.get(`${renderUrl}/health`, () => {}).on("error", () => {});
-    },
-    2 * 60 * 1000,
-  );
-}
