@@ -58,26 +58,26 @@ export default function LoginScreen() {
         behavior={Platform.OS === "ios" ? "padding" : undefined}
         className="flex-1"
       >
-        <View className="flex-1 justify-center px-6">
+        <View className="justify-center flex-1 px-6">
           {/* 🔹 Logo + Title */}
           <View className="items-center mb-8">
-            <View className="w-20 h-20 bg-green-700 rounded-full items-center justify-center">
-              <Text className="text-white font-bold">NutriScan</Text>
+            <View className="items-center justify-center w-20 h-20 bg-green-700 rounded-full">
+              <Text className="font-bold text-white">NutriScan</Text>
             </View>
 
-            <Text className="text-3xl font-bold mt-4 text-gray-800">
+            <Text className="mt-4 text-3xl font-bold text-gray-800">
               NutriScan
             </Text>
 
-            <Text className="text-gray-500 mt-2 text-center">
+            <Text className="mt-2 text-center text-gray-500">
               Your intelligent nutritional companion
             </Text>
           </View>
 
           {/* 🔹 Card */}
-          <View className="bg-white rounded-3xl p-6 shadow-sm">
+          <View className="p-6 bg-white shadow-sm rounded-3xl">
             {/* EMAIL */}
-            <Text className="text-xs text-gray-400 mb-2 tracking-widest">
+            <Text className="mb-2 text-xs tracking-widest text-gray-400">
               EMAIL ADDRESS
             </Text>
 
@@ -87,21 +87,21 @@ export default function LoginScreen() {
                 placeholder="Enter email"
                 value={email}
                 onChangeText={setEmail}
-                className="ml-3 flex-1 text-gray-800"
+                className="flex-1 ml-3 text-gray-800"
                 keyboardType="email-address"
               />
             </View>
 
             {/* PASSWORD */}
-            <View className="flex-row justify-between items-center mb-2">
-              <Text className="text-xs text-gray-400 tracking-widest">
+            <View className="flex-row items-center justify-between mb-2">
+              <Text className="text-xs tracking-widest text-gray-400">
                 PASSWORD
               </Text>
 
               <TouchableOpacity
                 onPress={() => router.push("/(auth)/forgot-password")}
               >
-                <Text className="text-green-700 text-xs font-semibold">
+                <Text className="text-xs font-semibold text-green-700">
                   FORGOT?
                 </Text>
               </TouchableOpacity>
@@ -111,11 +111,11 @@ export default function LoginScreen() {
               <Feather name="lock" size={18} color="#6B7280" />
 
               <TextInput
-                placeholder="Enter password "
+                placeholder="Enter password"
                 secureTextEntry={secure}
                 value={password}
                 onChangeText={setPassword}
-                className="ml-3 flex-1 text-gray-800"
+                className="flex-1 ml-3 text-gray-800"
               />
 
               {/* Toggle visibility */}
@@ -132,9 +132,9 @@ export default function LoginScreen() {
             <TouchableOpacity
               onPress={onLogin}
               disabled={loading}
-              className="bg-green-600 rounded-full py-4 mt-6 items-center"
+              className="items-center py-4 mt-6 bg-green-600 rounded-full"
             >
-              <Text className="text-white font-semibold text-base">
+              <Text className="text-base font-semibold text-white">
                 {loading ? "Logging in..." : "Login →"}
               </Text>
             </TouchableOpacity>
@@ -150,29 +150,29 @@ export default function LoginScreen() {
 
             {/* Social Buttons */}
             <View className="flex-row justify-between">
-              <TouchableOpacity className="flex-1 bg-gray-100 py-3 rounded-xl items-center mr-2">
+              <TouchableOpacity className="items-center flex-1 py-3 mr-2 bg-gray-100 rounded-xl">
                 <Text className="text-gray-700">Google</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity className="flex-1 bg-gray-100 py-3 rounded-xl items-center ml-2">
+              <TouchableOpacity className="items-center flex-1 py-3 ml-2 bg-gray-100 rounded-xl">
                 <Text className="text-gray-700">Apple</Text>
               </TouchableOpacity>
             </View>
           </View>
 
           {/* 🔹 Footer */}
-          <View className="mt-6 items-center">
+          <View className="items-center mt-6">
             <Text className="text-gray-500">
               New to NutriScan?{" "}
               <Text
-                className="text-green-700 font-semibold"
+                className="font-semibold text-green-700"
                 onPress={() => router.push("/(auth)/signup")}
               >
                 Create an account
               </Text>
             </Text>
 
-            <Text className="text-gray-400 text-xs mt-4 tracking-widest">
+            <Text className="mt-4 text-xs tracking-widest text-gray-400">
               PRECISION HEALTH TECHNOLOGY • 2024
             </Text>
           </View>
