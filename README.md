@@ -1,66 +1,144 @@
-Project Overview
-NutriScan is a mobile application developed for the modern consumer who wants to make informed dietary choices without deciphering complex scientific labels. By combining mobile imaging technology with backend nutritional analysis, the app provides an instant health "grade" for food products, identifies beneficial or harmful ingredients, and suggests healthier alternatives.
+# 🥗 NutriScan
 
-Key Features
-📸 Multi-Modal Scanning Interface
-The application offers three intuitive ways to analyze products:
+[![Expo](https://img.shields.io/badge/Expo-54.0-000020?style=for-the-badge&logo=expo&logoColor=white)](https://expo.dev/)
+[![React Native](https://img.shields.io/badge/React_Native-0.81-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://reactnative.dev/)
+[![Node.js](https://img.shields.io/badge/Node.js-20.x-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)](https://nodejs.org/)
+[![MongoDB](https://img.shields.io/badge/MongoDB-8.3-47A248?style=for-the-badge&logo=mongodb&logoColor=white)](https://www.mongodb.com/)
+[![Groq AI](https://img.shields.io/badge/AI_Powered-Groq-orange?style=for-the-badge)](https://groq.com/)
 
-Live Camera Capture: Directly photograph ingredient labels for instant analysis using Base64-encoded image processing.
+**NutriScan** is an AI-powered food nutrition scanner designed to help users make healthier dietary choices instantly. By leveraging advanced vision models and personalized health metrics, NutriScan deciphers complex ingredient labels and provides actionable insights.
 
-Gallery Upload: Select existing photos from the device's library to run historical scans.
+![NutriScan Logo](file:///C:/Users/satht/.gemini/antigravity/brain/ed580ce4-9974-4784-9584-706abac52cb5/nutriscan_logo_1777131224395.png)
 
-Manual Barcode Entry: A dedicated input field for barcode numbers to fetch product data directly from the API.
+## ✨ Key Features
 
-📊 Comprehensive Health Analysis
-Upon scanning, users receive a detailed breakdown of their food item:
+-   **📸 AI Image Scanning**: Take a photo of any food ingredient label and get an instant analysis of its contents.
+-   **🔍 Barcode Support**: Scan product barcodes to fetch comprehensive nutritional data from our global database.
+-   **🧠 Smart Health Analytics**: A sophisticated weighted scoring system that evaluates products based on your specific dietary needs and recent consumption trends.
+-   **🥗 Personalized Recommendations**: Tailored analysis based on your diet (e.g., Vegan, Keto) and allergies (e.g., Gluten, Peanuts).
+-   **🔄 Healthy Alternatives**: Don't like what you see? NutriScan suggests better swaps for high-sugar or processed items.
+-   **📈 Health Profile & History**: Track your nutritional journey with a dynamic health score that evolves with your scanning habits.
 
-Dynamic Health Score: A visual 0–100 score that changes color (green, amber, or red) based on the product's overall health impact.
+---
 
-Nutritional Grade: An easy-to-understand letter grade (e.g., A, B, C) for quick decision-making.
+## 🛠️ Tech Stack
 
-Visual Nutrient Tracking: Real-time progress bars for calories, protein, and sugar content.
+### Frontend
+-   **Framework**: [Expo](https://expo.dev/) (React Native)
+-   **Navigation**: [Expo Router](https://docs.expo.dev/router/introduction/) (File-based routing)
+-   **Styling**: [NativeWind](https://www.nativewind.dev/) (Tailwind CSS for React Native)
+-   **State Management**: [Zustand](https://github.com/pmndrs/zustand)
+-   **Hardware**: `expo-camera`, `expo-image-picker`
 
-🥗 Ingredient Insights & Alternatives
-Categorized Ingredients: The app intelligently splits labels into "Safe & Beneficial" and "Avoid / Limit" categories, providing specific reasons for why certain ingredients should be avoided.
+### Backend
+-   **Runtime**: Node.js
+-   **Framework**: Express.js
+-   **Database**: MongoDB (via Mongoose)
+-   **AI Engine**: Groq API (`meta-llama/llama-3.2-vision`)
+-   **Storage**: Cloudinary (Image hosting)
+-   **Security**: JWT Authentication, Rate Limiting, Helmet, Mongo Sanitize
 
-Healthy Swaps: If a product is flagged as unhealthy, the system suggests verified "Healthier Alternatives" with a one-tap swap action.
+---
 
-Technical Architecture
-Tech Stack
-Framework: Expo (v54) and React Native (v0.81.5) for cross-platform performance.
+## 📐 Architecture
 
-Navigation: Expo Router (v6.0.23) utilizing file-based routing for a seamless user experience.
+```mermaid
+graph TD
+    User[Mobile App] -->|Image/Barcode| API[Express Backend]
+    API -->|Base64| Cloudinary[Cloudinary Storage]
+    API -->|Context + URL| Groq[Groq AI Vision]
+    Groq -->|JSON Analysis| API
+    API -->|Save History| DB[(MongoDB)]
+    API -->|Calculate Score| HS[Health Score Service]
+    HS --> API
+    API -->|Final Analysis| User
+```
 
-State Management: Zustand (v5.0.12) for efficient, global management of scan results and product data.
+---
 
-UI/Styling: NativeWind (v4.2.3) (Tailwind CSS for React Native) ensuring a modern, responsive design.
+## 🚀 Getting Started
 
-API Management: Axios-based client with a built-in mock mode toggle in the environment configuration for development and testing.
+### Prerequisites
+-   Node.js (>= 20.x)
+-   npm or yarn
+-   Expo Go app (for mobile testing)
+-   MongoDB instance (local or Atlas)
+-   Cloudinary account
+-   Groq API Key
 
-Core Workflow
-Ingestion: The useScan hook manages the logic for image capture and gallery picking.
+### Backend Setup
+1. Navigate to the backend directory:
+    ```bash
+    cd Backend
+    ```
+2. Install dependencies:
+    ```bash
+    npm install
+    ```
+3. Create a `.env` file based on `.env.example`:
+    ```bash
+    cp .env.example .env
+    ```
+4. Fill in your credentials:
+    - `MONGO_URI`: Your MongoDB connection string.
+    - `GROQ_API_KEY`: Your Groq API key for AI analysis.
+    - `CLOUDINARY_*`: Your Cloudinary cloud name, API key, and secret.
+    - `JWT_SECRET`: A secure string for auth tokens.
+5. Start the server:
+    ```bash
+    npm run dev
+    ```
 
-Processing: Images are converted to Base64 and transmitted via scanImageApi to the backend.
+### Frontend Setup
+1. Navigate to the frontend directory:
+    ```bash
+    cd nutriscan
+    ```
+2. Install dependencies:
+    ```bash
+    npm install
+    ```
+3. Create a `.env` file:
+    ```env
+    EXPO_PUBLIC_API_URL=http://your-local-ip:3000
+    EXPO_PUBLIC_USE_MOCK=false
+    ```
+4. Start the app:
+    ```bash
+    npx expo start
+    ```
 
-Storage: The resulting analysis is stored in the useScanStore, which triggers an automatic navigation to the Analysis screen.
+---
 
-Presentation: The AnalysisScreen renders the data using robust fallbacks to ensure the UI remains functional even with incomplete datasets.
+## 📡 API Endpoints Summary
 
-Getting Started
-Prerequisites
-Node.js and npm
+| Method | Endpoint | Description | Auth |
+| :--- | :--- | :--- | :---: |
+| `POST` | `/auth/register` | Register a new user | ❌ |
+| `POST` | `/auth/login` | Login and get JWT | ❌ |
+| `GET` | `/user/profile` | Get user health profile | ✅ |
+| `POST` | `/scan/image` | Analyze food ingredient label image | ✅ |
+| `POST` | `/scan/barcode` | Analyze product via barcode | ✅ |
+| `GET` | `/scan/history` | Get user's previous scans | ✅ |
 
-Expo Go app installed on a mobile device or an Android/iOS emulator
+---
 
-Installation
-Install dependencies:
+## 🤝 Contributing
 
-npm install
+Contributions are welcome! Please feel free to submit a Pull Request.
 
-Start the development server:
+1. Fork the Project
+2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the Branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
-npx expo start
+---
 
-Switch to Mock Data (Optional):
+## 📄 License
 
-Set USE_MOCK=true in your .env configuration to test the UI with pre-defined analysis data without needing a live backend.
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+---
+
+<p align="center">Made with ❤️ for a healthier world.</p>
