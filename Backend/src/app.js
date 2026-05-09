@@ -11,8 +11,12 @@ dotenv.config();
 
 const app = express();
 
+// ✅ Trust proxy is required for rate limiting on Vercel/Render
+app.set("trust proxy", 1);
+
 // Security headers
 app.use(helmet());
+
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -49,6 +53,14 @@ app.use(express.urlencoded({ extended: true }));
 app.use(mongoSanitize());
 
 app.use(hpp());
+
+app.get("/", (req, res) => {
+  res.json({
+    message: "Welcome to NutriScan API",
+    status: "online",
+    documentation: "Check documentation for available endpoints",
+  });
+});
 
 app.get("/health", (req, res) => {
   res.status(200).json({ status: "ok", uptime: process.uptime() });
