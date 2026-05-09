@@ -1,52 +1,38 @@
-async function createTransporter() {
-  let nodemailer;
+const { Resend } = require("resend");
+
+/**
+ * 📧 Mailer Utility (using Resend)
+ * Handles sending verification codes and system notifications.
+ */
+exports.sendMail = async ({ to, subject, html, text }) => {
+  const apiKey = process.env.RESEND_API_KEY;
+  const from = process.env.MAIL_FROM || "onboarding@resend.dev";
+
+  if (!apiKey) {
+    console.error("❌ RESEND_API_KEY is missing in backend/.env");
+    throw new Error("Email service is not configured.");
+  }
+
+  const resend = new Resend(apiKey);
 
   try {
-    nodemailer = require("nodemailer");
-  } catch (error) {
-    const dependencyError = new Error(
-      'Missing "nodemailer". Run "npm install nodemailer" in the backend folder.',
-    );
-    dependencyError.status = 500;
-    throw dependencyError;
+    const { data, error } = await resend.emails.send({
+      from: `NutriScan <${from}>`,
+      to: [to],
+      subject,
+      html,
+      text,
+    });
+
+    if (error) {
+      console.error("❌ Resend Error:", error);
+      throw new Error(error.message || "Failed to send email via Resend.");
+    }
+
+    return data;
+  } catch (err) {
+    console.error("❌ Mailer Exception:", err);
+    throw err;
   }
-
-  const {
-    SMTP_HOST,
-    SMTP_PORT,
-    SMTP_USER,
-    SMTP_PASS,
-    SMTP_SECURE,
-    MAIL_FROM,
-  } = process.env;
-
-  if (!SMTP_HOST || !SMTP_PORT || !SMTP_USER || !SMTP_PASS || !MAIL_FROM) {
-    const configError = new Error(
-      "SMTP configuration is incomplete. Set SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, and MAIL_FROM in backend/.env.",
-    );
-    configError.status = 500;
-    throw configError;
-  }
-
-  return nodemailer.createTransport({
-    host: SMTP_HOST,
-    port: Number(SMTP_PORT),
-    secure: SMTP_SECURE === "true" || Number(SMTP_PORT) === 465,
-    auth: {
-      user: SMTP_USER,
-      pass: SMTP_PASS,
-    },
-  });
-}
-
-exports.sendMail = async ({ to, subject, html, text }) => {
-  const transporter = await createTransporter();
-
-  await transporter.sendMail({
-    from: process.env.MAIL_FROM,
-    to,
-    subject,
-    html,
-    text,
-  });
 };
+
