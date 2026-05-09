@@ -3,6 +3,7 @@ import { View } from "react-native";
 import { ToastHost } from "../src/components/ToastHost";
 import { ErrorBoundary } from "../src/components/ErrorBoundary";
 import { GlobalLoader } from "../src/components/GlobalLoader";
+import { UpdateHandler } from "../src/components/UpdateHandler";
 import "@/global.css";
 
 /**
@@ -13,6 +14,7 @@ export default function RootLayout() {
   return (
     <ErrorBoundary>
       <View className="flex-1">
+        <UpdateHandler />
         <Stack screenOptions={{ headerShown: false }} />
         <ToastHost />
         <GlobalLoader />
@@ -20,3 +22,4 @@ export default function RootLayout() {
     </ErrorBoundary>
   );
 }
+
