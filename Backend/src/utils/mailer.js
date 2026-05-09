@@ -16,20 +16,24 @@ exports.sendMail = async ({ to, subject, html, text }) => {
   const resend = new Resend(apiKey);
 
   try {
+    console.log(`📤 Attempting to send email to: ${to} from: ${from}`);
+    
     const { data, error } = await resend.emails.send({
-      from: `NutriScan <${from}>`,
-      to: [to],
+      from: from, // Simplified: just use the email directly for better compatibility
+      to: to,      // Resend accepts string or array
       subject,
       html,
       text,
     });
 
     if (error) {
-      console.error("❌ Resend Error:", error);
+      console.error("❌ Resend Error Details:", JSON.stringify(error, null, 2));
       throw new Error(error.message || "Failed to send email via Resend.");
     }
 
+    console.log("✅ Email sent successfully:", data.id);
     return data;
+
   } catch (err) {
     console.error("❌ Mailer Exception:", err);
     throw err;
