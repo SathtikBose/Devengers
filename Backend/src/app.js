@@ -11,12 +11,19 @@ dotenv.config();
 
 const app = express();
 
-// ✅ Connect to Database (Required for Vercel Serverless)
-const connectDB = require("./config/db");
-connectDB();
-
 // ✅ Trust proxy is required for rate limiting on Vercel/Render
 app.set("trust proxy", 1);
+
+// ✅ Database connection middleware for Vercel
+const connectDB = require("./config/db");
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (err) {
+    next(err);
+  }
+});
 
 // Security headers
 app.use(helmet());
