@@ -24,7 +24,7 @@ app.use(helmet());
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 100,
+  max: 1000, // Increased for testing
   standardHeaders: true,
   legacyHeaders: false,
   message: {
@@ -37,7 +37,7 @@ app.use(limiter);
 // Stricter limiter for auth — 10 req / 15 min per IP
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 10,
+  max: 100, // Increased for testing
   standardHeaders: true,
   legacyHeaders: false,
   message: {
